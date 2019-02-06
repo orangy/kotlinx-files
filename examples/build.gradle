@@ -1,0 +1,126 @@
+apply plugin: 'kotlin-multiplatform'
+
+def ideaActive = System.getProperty('idea.active') == 'true'
+
+kotlin {
+    if (ideaActive) {
+        macosX64('native') {
+            binaries {
+                executable {
+                    entryPoint = 'kotlinx.files.examples.main'
+                }
+            }
+        }
+    } else {
+        macosX64('macos64') {
+            binaries {
+                executable {
+                    entryPoint = 'kotlinx.files.examples.main'
+                }
+            }
+        }
+        linuxX64('linux64') {
+            binaries {
+                executable {
+                    entryPoint = 'kotlinx.files.examples.main'
+                }
+            }
+        }
+    }
+
+    jvm {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = '1.8'
+            }
+        }
+    }
+    js {
+        compilations.all {
+            kotlinOptions {
+                sourceMap = true
+                moduleKind = "umd"
+                metaInfo = true
+            }
+        }
+    }
+
+    sourceSets.all {
+        languageSettings {
+            progressiveMode = true
+            useExperimentalAnnotation("kotlin.Experimental")
+        }
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                api "org.jetbrains.kotlin:kotlin-stdlib"
+                api "org.jetbrains.kotlinx:kotlinx-io:$kotlinx_io_version"
+                api project(":core")
+            }
+        }
+
+        commonTest {
+            dependencies {
+                api 'org.jetbrains.kotlin:kotlin-test-common'
+                api 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                api 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+                api "org.jetbrains.kotlinx:kotlinx-io-jvm:$kotlinx_io_version"
+
+            }
+        }
+        jvmTest {
+            dependencies {
+                api 'org.jetbrains.kotlin:kotlin-test-junit'
+            }
+        }
+
+        jsMain {
+            dependencies {
+                api 'org.jetbrains.kotlin:kotlin-stdlib-js'
+                api "org.jetbrains.kotlinx:kotlinx-io-js:$kotlinx_io_version"
+            }
+        }
+
+        jsTest {
+            dependencies {
+                api 'org.jetbrains.kotlin:kotlin-test-js'
+            }
+        }
+
+        nativeMain.dependencies {
+            api "org.jetbrains.kotlinx:kotlinx-io-native:$kotlinx_io_version"
+        }
+
+        if (!ideaActive) {
+            nativeMain {}
+
+            nativeTest {}
+
+            configure([linux64Main, macos64Main]) {
+                dependsOn nativeMain
+            }
+
+            configure([linux64Test, macos64Test]) {
+                dependsOn nativeTest
+            }
+        }
+    }
+
+    sourceSets.all {
+        kotlin.srcDirs = ["$it.name/src"]
+        resources.srcDirs = ["$it.name/resources"]
+        languageSettings {
+            progressiveMode = true
+            useExperimentalAnnotation("kotlin.Experimental")
+            useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+            useExperimentalAnnotation('kotlinx.io.core.ExperimentalIoApi')
+        }
+    }
+}
