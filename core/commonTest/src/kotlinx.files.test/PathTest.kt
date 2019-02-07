@@ -67,6 +67,7 @@ class PathTest {
 
     private fun checkSingleFileName(path: Path, expectedName: String) {
         assertFalse(path.isAbsolute)
+        println("Checking: $path")
         assertEquals(expectedName, path.name.toString())
         assertEquals(1, path.componentCount)
         assertEquals(expectedName, path.toString())

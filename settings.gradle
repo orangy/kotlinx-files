@@ -1,6 +1,6 @@
-rootProject.name = 'kotlinx-files'
-
 enableFeaturePreview('GRADLE_METADATA')
+
+rootProject.name = 'kotlinx-files'
 
 include ":core"
 include ":examples"

@@ -12,6 +12,9 @@ class UnixPath private constructor(
         private const val pathSeparator = '/'
     }
 
+    // BUG in K/N: this should be before normalizedPath or it will incorrectly reinit the property as "uninited"
+    private lateinit var componentOffsets: IntArray
+
     // If we passed offsets to constructor, the provided path must be normalized
     // Otherwise normalize() will fix the path if needed and calculate offsets
     // Normalized path is the path without empty components.
@@ -20,12 +23,11 @@ class UnixPath private constructor(
     else
         path.also { componentOffsets = offsets }
 
-    private lateinit var componentOffsets: IntArray
 
     // TODO: may be lazy?
     override val parent: UnixPath?
         get() {
-            if (componentOffsets.isEmpty()) 
+            if (componentOffsets.isEmpty())
                 return null
 
             /*
@@ -49,7 +51,7 @@ class UnixPath private constructor(
         get() {
             if (componentOffsets.isEmpty())
                 return null
-            
+
             val path = normalizedPath.substring(componentOffsets.last(), normalizedPath.length)
             return UnixPath(fileSystem, path, intArrayOf(0))
         }
