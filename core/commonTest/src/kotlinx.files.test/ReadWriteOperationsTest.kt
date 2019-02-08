@@ -20,6 +20,21 @@ class ReadWriteOperationsTest : TestBase() {
             "Expected ${expected.contentToString()}, but has ${actual.contentToString()}"
         )
     }
+    
+    @Test
+    fun testWriteReadLong() {
+        val path = testFile("write-read").createFile()
+        val content = ByteArray(10_000) { it.toByte() }
+        path.writeBytes(content)
+
+        val expected = content.copyOf()
+        val actual = path.readBytes()
+
+        assertTrue(
+            actual.contentEquals(expected),
+            "Expected ${expected.contentToString()}, but has ${actual.contentToString()}"
+        )
+    }
 
     @Test
     fun testWriteNonExistent() {

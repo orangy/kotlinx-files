@@ -4,7 +4,11 @@ import kotlinx.files.*
 import kotlin.test.*
 
 open class TestBase {
-    private val testFolder: Path = FileSystems.Default.createDirectory(Path("build/testFolder"))
+    private val testFolderPath = Path("build/testFolder")
+    private val testFolder: Path = testFolderPath.also {
+        if (!it.exists())
+            FileSystems.Default.createDirectory(testFolderPath)
+    }
 
     @AfterTest
     fun tearDown() {

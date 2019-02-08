@@ -16,7 +16,10 @@ class PosixFileSystem : FileSystem {
         return UnixPath(this, "$name/" + children.joinToString("/"))
     }
 
-    override fun exists(path: Path): Boolean = access(path.str(), F_OK) == 0
+    override fun exists(path: Path): Boolean {
+        checkCompatible(path)
+        return access(path.str(), F_OK) == 0
+    }
 
     override fun openDirectory(path: Path): Directory {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

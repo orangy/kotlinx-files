@@ -15,8 +15,10 @@ class CopyTest : TestBase() {
         val target = testFile("target-file")
         file.copyTo(target)
 
-        assertTrue(expectedContent.contentEquals(target.readBytes()))
-        assertTrue(expectedContent.contentEquals(file.readBytes()))
+        val targetBytes = target.readBytes()
+        val sourceBytes = file.readBytes()
+        assertTrue(expectedContent.contentEquals(sourceBytes), "Source content mismatch: ${expectedContent.contentToString()}\n${sourceBytes.contentToString()}")
+        assertTrue(expectedContent.contentEquals(targetBytes), "Target content mismatch: ${expectedContent.contentToString()}\n${targetBytes.contentToString()}")
         assertTrue(file.exists())
     }
 
