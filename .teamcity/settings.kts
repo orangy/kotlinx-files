@@ -33,28 +33,39 @@ project {
 }
 
 fun Project.build(platform: String) = BuildType {
+    // ID is prepended with Project ID, so don't repeat it here
+    // ID should conform to identifier rules, so just letters, numbers and underscore
     id("Build_${platform.substringBefore(" ")}")
+    
+    // Display name of the build configuration
     name = "Build ($platform)"
+    
+    // Allow to fetch build status through API for badges
     allowExternalStatus = true
+    
+    // What files to publish as build artifacts
     artifactRules = """
         +:**/build/libs/*.jar
         +:**/build/libs/*.klib
     """.trimIndent()
 
+    params {
+        // This parameter is needed for macOS agent to be compatible
+        param("env.JDK_17", "")
+    }
+    
+    // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
     vcs {
         root(DslContext.settingsRoot)
     }
 
+    // How to build a project
     steps {
         gradle {
+            jdkHome = "%env.JDK_18_x64%"
             tasks = "clean build"
             buildFile = ""
             gradleWrapperPath = ""
-        }
-        gradle {
-            tasks = "verifyPublications"
-            gradleParams = "--stacktrace"
-            param("org.jfrog.artifactory.selectedDeployableServer.defaultModuleVersionConfiguration", "GLOBAL")
         }
     }
 
