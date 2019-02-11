@@ -33,6 +33,7 @@ project {
 }
 
 fun Project.build(platform: String) = BuildType {
+    id("kotlinx-files-build-${platform.substringBefore(" ")}")
     name = "Build ($platform)"
     allowExternalStatus = true
     artifactRules = """
