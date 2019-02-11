@@ -41,9 +41,11 @@ fun Project.build(platform: String) = BuildType {
         +:**/build/libs/*.klib
     """.trimIndent()
 
+/*
     vcs {
         root(DslContext.projectId)
     }
+*/
 
     steps {
         gradle {
