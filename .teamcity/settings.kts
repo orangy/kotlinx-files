@@ -36,13 +36,13 @@ fun Project.build(platform: String) = BuildType {
     // ID is prepended with Project ID, so don't repeat it here
     // ID should conform to identifier rules, so just letters, numbers and underscore
     id("Build_${platform.substringBefore(" ")}")
-    
+
     // Display name of the build configuration
     name = "Build ($platform)"
-    
+
     // Allow to fetch build status through API for badges
     allowExternalStatus = true
-    
+
     // What files to publish as build artifacts
     artifactRules = """
         +:**/build/libs/*.jar
@@ -50,10 +50,11 @@ fun Project.build(platform: String) = BuildType {
     """.trimIndent()
 
     params {
+        param("teamcity.ui.settings.readOnly", "true")
         // This parameter is needed for macOS agent to be compatible
         param("env.JDK_17", "")
     }
-    
+
     // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
     vcs {
         root(DslContext.settingsRoot)
