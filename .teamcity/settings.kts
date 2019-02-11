@@ -42,7 +42,7 @@ fun Project.build(platform: String) = BuildType {
     """.trimIndent()
 
     vcs {
-        root(DslContext.projectId)
+        root(DslContext.settingsRoot)
     }
 
     steps {
