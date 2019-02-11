@@ -63,6 +63,7 @@ fun Project.build(platform: String) = BuildType {
     steps {
         gradle {
             jdkHome = "%env.JDK_18_x64%"
+            jvmArgs = "-Xmx1g"
             tasks = "clean build"
             buildFile = ""
             gradleWrapperPath = ""
