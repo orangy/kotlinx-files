@@ -29,6 +29,11 @@ version = "2018.2"
 val platforms = listOf("Windows", "Linux", "Mac OS X")
 
 project {
+    // Disable editing of project and build settings from the UI to avoid issues with TeamCity
+    params {
+        param("teamcity.ui.settings.readOnly", "true")
+    }
+    
     buildTypesOrder = platforms.map { build(it) }
 }
 
@@ -50,7 +55,6 @@ fun Project.build(platform: String) = BuildType {
     """.trimIndent()
 
     params {
-        param("teamcity.ui.settings.readOnly", "true")
         // This parameter is needed for macOS agent to be compatible
         param("env.JDK_17", "")
     }
