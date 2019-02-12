@@ -125,6 +125,11 @@ fun Project.deployConfigure() = BuildType {
         param(versionParameter, "%build.number%")
     }
 
+    requirements {
+        // Require Linux for configuration build
+        contains("teamcity.agent.jvm.os.name", "Linux")
+    }
+
     steps {
         // Verify that gradle can configure itself and there are no issue with gradle script
         gradle {
@@ -139,8 +144,8 @@ fun Project.deployConfigure() = BuildType {
             name = "Create Version on Bintray"
             scriptContent =
                 """
-echo '{"name": "%$versionParameter%", "desc": "", "released":"$(date +%%FT%%TZ)"}'                    
-curl -d '{"name": "%$versionParameter%", "desc": "", "released":"$(date +%%FT%%TZ)"}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
+echo '{"name": "%$versionParameter%", "desc": "", "released":%system.build.start.date%"}'                    
+curl -d '{"name": "%$versionParameter%", "desc": "", "released":"%system.build.start.date%' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
 """.trimIndent()
         }
     }
