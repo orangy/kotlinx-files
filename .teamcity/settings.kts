@@ -122,11 +122,11 @@ fun Project.deployConfigure() = BuildType {
         // enable editing of this configuration to set up things
         param("teamcity.ui.settings.readOnly", "false")
 
-        param("bintray-org", "orangy")
-        param("bintray-repo", "maven")
-        param("bintray-user", "orangy")
-        password("bintray-key", "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07")
-        param("bintray-package", "kotlinx-files")
+        param("env.bintray-org", "orangy")
+        param("env.bintray-repo", "maven")
+        param("env.bintray-user", "orangy")
+        password("env.bintray-key", "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07")
+        param("env.bintray-package", "kotlinx-files")
 
         param(versionParameter, "%build.number%")
     }
