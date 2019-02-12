@@ -38,7 +38,7 @@ project {
     val builds = platforms.map { build(it) }
 
     val deployConfigure = deployConfigure()
-    val deploys = platforms.map { deploy(it, deployConfigure) }.apply {
+    val deploys = platforms.map { deploy(it, deployConfigure) }/*.apply {
         reduce { previous, current ->
             current.apply {
                 // Dependency on previous is needed to serialize deployment builds
@@ -53,7 +53,7 @@ project {
                 }
             }
         }
-    }
+    }*/
 
     val deployPublish = deployPublish().apply {
         deploys.forEach {
@@ -150,7 +150,7 @@ curl -d '{"name": "1.1.5", "desc": "",}' --user %bintray-user%:%bintray-key% -H 
 fun Project.deployPublish() = BuildType {
     id("Deploy_Publish")
     this.name = "Deploy (Publish)"
-
+    type = BuildTypeSettings.Type.COMPOSITE
     buildNumberPattern = "%build.counter% (%releaseVersion%)"
     commonConfigure()
 }.also { buildType(it) }
