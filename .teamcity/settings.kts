@@ -70,6 +70,7 @@ project {
 
 
 fun Project.build(platform: String) = platform(platform, "Build") {
+/*
     triggers {
         vcs {
             triggerRules = """
@@ -78,6 +79,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             """.trimIndent()
         }
     }
+*/
 
     // How to build a project
     steps {
