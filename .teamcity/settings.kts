@@ -42,7 +42,7 @@ project {
         buildAll.dependsOnSnapshot(build)
         buildAll.dependsOn(build) {
             artifacts {
-                artifactRules = "+:**/build/maven"
+                artifactRules = "+:build/maven"
             }
         }
     }
@@ -89,7 +89,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
     }
 
     // What files to publish as build artifacts
-    artifactRules = "+:**/build/maven"
+    artifactRules = "+:build/maven"
 }
 
 fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
@@ -147,7 +147,8 @@ fun Project.deployConfigure() = BuildType {
             // TODO: Figure out how to get the build date :(
             scriptContent =
                 """
-echo '{"name": "%$versionParameter%", "desc": "", "released":"`date +%%FT%%TZ`"}'                    
+DATE=`date +%%FT%%TZ`                    
+echo '{"name": "%$versionParameter%", "desc": "", "released":${'$'}DATE"}'                    
 curl -d '{"name": "%$versionParameter%", "desc": ""}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
 """.trimIndent()
         }
