@@ -1,6 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.v2018_2.*
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.*
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -49,10 +48,9 @@ project {
         }
     }*/
 
-    val deployPublish = deployPublish().apply {
-        dependsOnSnapshot(deployConfigure)
+    val deployPublish = deployPublish(deployConfigure).apply {
         deploys.forEach {
-            dependsOnSnapshot(it) 
+            dependsOnSnapshot(it)
         }
     }
 
@@ -61,16 +59,16 @@ project {
 
 
 fun Project.build(platform: String) = platform(platform, "Build") {
-/*
-    triggers {
-        vcs {
-            triggerRules = """
-                -:*.md
-                -:.gitignore
-            """.trimIndent()
+    /*
+        triggers {
+            vcs {
+                triggerRules = """
+                    -:*.md
+                    -:.gitignore
+                """.trimIndent()
+            }
         }
-    }
-*/
+    */
 
     // How to build a project
     steps {
@@ -148,13 +146,17 @@ curl -d '{"name": "%$versionParameter%", "desc": "", "released":"$(date +%%FT%%T
     }
 }.also { buildType(it) }
 
-fun Project.deployPublish() = BuildType {
+fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     id("Deploy_Publish")
     this.name = "Deploy (Publish)"
     type = BuildTypeSettings.Type.COMPOSITE
     buildNumberPattern = "%releaseVersion% (%build.counter%)"
+    params {
+        param(versionParameter, "${configureBuild.depParamRefs.buildNumber}")
+    }
     commonConfigure()
-}.also { buildType(it) }
+}.also { buildType(it) }.dependsOnSnapshot(configureBuild)
+
 
 fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platform, "Deploy") {
     type = BuildTypeSettings.Type.DEPLOYMENT
