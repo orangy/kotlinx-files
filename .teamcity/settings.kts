@@ -179,6 +179,8 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
     buildNumberPattern = "%releaseVersion% (%build.counter%)"
     params {
         param(versionParameter, "${configureBuild.depParamRefs.buildNumber}")
+        param("bintray-key", "${configureBuild.depParamRefs["bintray-key"]}")
+        param("bintray-user", "${configureBuild.depParamRefs["bintray-user"]}")
     }
 
     vcs {
