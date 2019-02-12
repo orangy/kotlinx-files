@@ -8,6 +8,7 @@ kotlin {
     } else {
         macosX64('macos64')
         linuxX64('linux64')
+        mingwX64('windows64')
     }
 
     jvm {
@@ -78,11 +79,11 @@ kotlin {
 
             nativeTest {}
 
-            configure([linux64Main, macos64Main]) {
+            configure([linux64Main, macos64Main, windows64Main]) {
                 dependsOn nativeMain
             }
 
-            configure([linux64Test, macos64Test]) {
+            configure([linux64Test, macos64Test, windows64Test]) {
                 dependsOn nativeTest
             }
         }

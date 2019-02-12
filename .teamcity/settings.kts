@@ -69,6 +69,7 @@ fun Project.build(platform: String) = BuildType {
         gradle {
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
+            // --continue is needed to run tests on all platforms even if one platform fails
             tasks = "clean build --continue"
             buildFile = ""
             gradleWrapperPath = ""
