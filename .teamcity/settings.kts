@@ -44,24 +44,15 @@ project {
             current.apply {
                 // Dependency on previous is needed to serialize deployment builds
                 // TODO: Uploading can be made parallel if we create a version in configure
-                dependsOnSnapshot(previous) {
-                    onDependencyFailure = FailureAction.CANCEL
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-                dependsOnSnapshot(deployConfigure) {
-                    onDependencyFailure = FailureAction.CANCEL
-                    onDependencyCancel = FailureAction.CANCEL
-                }
+                dependsOnSnapshot(previous)
             }
         }
     }*/
 
     val deployPublish = deployPublish().apply {
+        dependsOnSnapshot(deployConfigure)
         deploys.forEach {
-            dependsOnSnapshot(it) {
-                onDependencyFailure = FailureAction.CANCEL
-                onDependencyCancel = FailureAction.CANCEL
-            }
+            dependsOnSnapshot(it) 
         }
     }
 
@@ -109,7 +100,11 @@ fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
 
 fun BuildType.dependsOnSnapshot(build: BuildType, configure: SnapshotDependency.() -> Unit = {}) = apply {
     dependencies.dependency(build) {
-        snapshot(configure)
+        snapshot {
+            configure()
+            onDependencyFailure = FailureAction.CANCEL
+            onDependencyCancel = FailureAction.CANCEL
+        }
     }
 }
 
@@ -186,10 +181,7 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
             gradleWrapperPath = ""
         }
     }
-}.dependsOnSnapshot(configureBuild) {
-    onDependencyFailure = FailureAction.CANCEL
-    onDependencyCancel = FailureAction.CANCEL
-}
+}.dependsOnSnapshot(configureBuild)
 
 fun Project.platform(platform: String, name: String, configure: BuildType.() -> Unit) = BuildType {
     // ID is prepended with Project ID, so don't repeat it here
