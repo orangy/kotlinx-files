@@ -42,7 +42,7 @@ project {
         buildAll.dependsOnSnapshot(build)
         buildAll.dependsOn(build) {
             artifacts {
-                artifactRules = "+:**/build/maven/"
+                artifactRules = "+:**/build/maven"
             }
         }
     }
@@ -82,14 +82,14 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
             // --continue is needed to run tests on all platforms even if one platform fails
-            tasks = "clean build publishToBuildRepository --continue"
+            tasks = "clean publishToBuildRepository check --continue"
             buildFile = ""
             gradleWrapperPath = ""
         }
     }
 
     // What files to publish as build artifacts
-    artifactRules = "+:**/build/maven/"
+    artifactRules = "+:**/build/maven"
 }
 
 fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
