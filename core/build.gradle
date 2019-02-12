@@ -106,8 +106,8 @@ kotlin {
 }
 
 publishing {
-    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('bintray-user')
-    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('bintray-key')
+    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('bintrayUser')
+    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('bintrayApiKey')
 
     repositories {
         maven {
