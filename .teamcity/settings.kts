@@ -39,7 +39,12 @@ project {
     val buildAll = buildAll()
     val builds = platforms.map { build(it) }
     builds.forEach { build ->
-        buildAll.dependsOnSnapshot(build)
+        buildAll.dependsOn(build) {
+            snapshot {
+                onDependencyFailure = FailureAction.ADD_PROBLEM
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
         buildAll.dependsOn(build) {
             artifacts {
                 artifactRules = "+:maven"
@@ -104,7 +109,7 @@ fun BuildType.dependsOnSnapshot(build: BuildType, configure: SnapshotDependency.
     dependencies.dependency(build) {
         snapshot {
             configure()
-            onDependencyFailure = FailureAction.CANCEL
+            onDependencyFailure = FailureAction.ADD_PROBLEM
             onDependencyCancel = FailureAction.CANCEL
         }
     }
