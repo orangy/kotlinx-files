@@ -15,4 +15,8 @@ allprojects {
         mavenLocal()
         jcenter()
     }
+
+    if (rootProject.hasProperty('releaseVersion')) {
+        project.version = rootProject.releaseVersion
+    }
 }

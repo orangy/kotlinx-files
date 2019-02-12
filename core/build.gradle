@@ -1,3 +1,7 @@
+plugins {
+    id 'maven-publish'
+}
+
 apply plugin: 'kotlin-multiplatform'
 
 def ideaActive = System.getProperty('idea.active') == 'true'
@@ -97,6 +101,40 @@ kotlin {
             useExperimentalAnnotation("kotlin.Experimental")
             useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
             useExperimentalAnnotation('kotlinx.io.core.ExperimentalIoApi')
+        }
+    }
+}
+
+publishing {
+    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    repositories {
+        maven {
+            name = 'build'
+            url = "$buildDir/maven"
+        }
+        maven {
+            name = 'bintray'
+            def bintrayOrg = project.bintrayOrg
+            def bintrayRepository = project.bintrayRepository
+            def bintrayPackage = project.bintrayPackage
+            url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
+            credentials {
+                username = user
+                password = key
+            }
+        }
+    }
+}
+
+afterEvaluate {
+    task('publishToBuildRepository') { publish ->
+        group = 'publishing'
+        tasks.withType(PublishToMavenRepository) { task ->
+            if (task.repository.name == 'build') {
+                publish.dependsOn(task)
+            }
         }
     }
 }

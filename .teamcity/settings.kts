@@ -1,5 +1,6 @@
 import jetbrains.buildServer.configs.kotlin.v2018_2.*
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.*
+import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.*
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -35,60 +36,60 @@ project {
         param("teamcity.ui.settings.readOnly", "true")
     }
 
+    val buildAll = buildAll()
     val builds = platforms.map { build(it) }
-
-    val deployConfigure = deployConfigure()
-    val deploys = platforms.map { deploy(it, deployConfigure) }/*.apply {
-        reduce { previous, current ->
-            current.apply {
-                // Dependency on previous is needed to serialize deployment builds
-                // TODO: Uploading can be made parallel if we create a version in configure
-                dependsOnSnapshot(previous)
+    builds.forEach { build ->
+        buildAll.dependsOnSnapshot(build)
+        buildAll.dependsOn(build) {
+            artifacts {
+                artifactRules = "+:**/build/maven/"
             }
         }
-    }*/
+    }
 
+    val deployConfigure = deployConfigure()
+    val deploys = platforms.map { deploy(it, deployConfigure) }
     val deployPublish = deployPublish(deployConfigure).apply {
         deploys.forEach {
             dependsOnSnapshot(it)
         }
     }
 
-    buildTypesOrder = builds + deployPublish + deployConfigure + deploys
+    buildTypesOrder = listOf(buildAll) + builds + deployPublish + deployConfigure + deploys
 }
 
+fun Project.buildAll() = BuildType {
+    id("Build_All")
+    this.name = "Build (All)"
+    type = BuildTypeSettings.Type.COMPOSITE
 
-fun Project.build(platform: String) = platform(platform, "Build") {
-    /*
-        triggers {
-            vcs {
-                triggerRules = """
+    triggers {
+        vcs {
+            triggerRules = """
                     -:*.md
                     -:.gitignore
                 """.trimIndent()
-            }
         }
-    */
+    }
 
-    // How to build a project
+    commonConfigure()
+}.also { buildType(it) }
+
+fun Project.build(platform: String) = platform(platform, "Build") {
     steps {
         gradle {
             name = "Build and Test $platform Binaries"
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
             // --continue is needed to run tests on all platforms even if one platform fails
-            tasks = "clean build --continue"
+            tasks = "clean build publishToBuildRepository --continue"
             buildFile = ""
             gradleWrapperPath = ""
         }
     }
 
     // What files to publish as build artifacts
-    artifactRules = """
-        +:**/build/libs/*.jar
-        +:**/build/libs/*.klib
-    """.trimIndent()
-
+    artifactRules = "+:**/build/maven/"
 }
 
 fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
@@ -184,8 +185,8 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
             name = "Deploy $platform Binaries"
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "-Pdeploy=true -P$versionParameter=%$versionParameter%"
-            tasks = "clean build publishToMavenLocal"
+            gradleParams = "-P$versionParameter=%$versionParameter%"
+            tasks = "clean build publish"
             buildFile = ""
             gradleWrapperPath = ""
         }
