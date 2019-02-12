@@ -47,7 +47,7 @@ project {
         }
         buildAll.dependsOn(build) {
             artifacts {
-                artifactRules = "+:maven"
+                artifactRules = "+:maven=>maven"
             }
         }
     }
@@ -76,10 +76,7 @@ fun Project.buildAll() = BuildType {
                 """.trimIndent()
         }
     }
-
-    // What files to publish as build artifacts
-    artifactRules = "+:maven=>maven"
-
+    
     commonConfigure()
 }.also { buildType(it) }
 
