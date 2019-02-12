@@ -147,8 +147,8 @@ fun Project.deployConfigure() = BuildType {
             // TODO: Figure out how to get the build date :(
             scriptContent =
                 """
-echo '{"name": "%$versionParameter%", "desc": ""}'                    
-curl -d '{"name": "%$versionParameter%", "desc": "", "released":"`date +%%FT%%TZ`"}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
+echo '{"name": "%$versionParameter%", "desc": "", "released":"`date +%%FT%%TZ`"}'                    
+curl -d '{"name": "%$versionParameter%", "desc": ""}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
 """.trimIndent()
         }
     }
