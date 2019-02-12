@@ -142,10 +142,12 @@ fun Project.deployConfigure() = BuildType {
         // Create version in bintray to run deploy tasks in parallel for platforms
         script {
             name = "Create Version on Bintray"
+            // add to JSON: , "released":"%system.build.start.date%"
+            // TODO: Figure out how to get the build date :(
             scriptContent =
                 """
-echo '{"name": "%$versionParameter%", "desc": "", "released":%system.build.start.date%"}'                    
-curl -d '{"name": "%$versionParameter%", "desc": "", "released":"%system.build.start.date%' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
+echo '{"name": "%$versionParameter%", "desc": ""}'                    
+curl -d '{"name": "%$versionParameter%", "desc": ""}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
 """.trimIndent()
         }
     }
