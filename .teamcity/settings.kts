@@ -165,8 +165,9 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
     maxRunningBuilds = 1
+    buildNumberPattern = "%releaseVersion% (%build.counter%)"
     params {
-        param(versionParameter, "${configureBuild.depParamRefs[versionParameter]}")
+        param(versionParameter, "${configureBuild.depParamRefs.buildNumber}")
     }
 
     vcs {
