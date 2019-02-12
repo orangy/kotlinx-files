@@ -78,7 +78,7 @@ fun Project.buildAll() = BuildType {
     }
 
     // What files to publish as build artifacts
-    artifactRules = "+:maven"
+    artifactRules = "+:maven=>maven"
 
     commonConfigure()
 }.also { buildType(it) }
