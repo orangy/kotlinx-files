@@ -26,6 +26,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2018.2"
 val versionParameter = "releaseVersion"
+val publishVersion = "0.1.0"
 
 val platforms = listOf("Windows", "Linux", "Mac OS X")
 
@@ -114,6 +115,7 @@ fun Project.deployConfigure() = BuildType {
     id("Deploy_Configure")
     this.name = "Deploy (Configure)"
     commonConfigure()
+    buildNumberPattern = "$publishVersion-dev-%build.counter%"
 
     params {
         // enable editing of this configuration to set up things
@@ -122,6 +124,7 @@ fun Project.deployConfigure() = BuildType {
         param("bintray-org", "orangy")
         param("bintray-repo", "maven")
         param("bintray-user", "orangy")
+        password("bintray-key", "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07")
         param("bintray-package", "kotlinx-files")
 
         param(versionParameter, "%build.number%")
@@ -151,7 +154,7 @@ fun Project.deployPublish() = BuildType {
     id("Deploy_Publish")
     this.name = "Deploy (Publish)"
     type = BuildTypeSettings.Type.COMPOSITE
-    buildNumberPattern = "%build.counter% (%releaseVersion%)"
+    buildNumberPattern = "%releaseVersion% (%build.counter%)"
     commonConfigure()
 }.also { buildType(it) }
 
@@ -173,7 +176,7 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
             name = "Deploy $platform Binaries"
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "-Pdeploy=true -P${versionParameter}=%${versionParameter}%"
+            gradleParams = "-Pdeploy=true -P$versionParameter=%$versionParameter%"
             tasks = "clean build publishToMavenLocal"
             buildFile = ""
             gradleWrapperPath = ""
