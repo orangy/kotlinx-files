@@ -25,6 +25,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 */
 
 version = "2018.2"
+val versionParameter = "releaseVersion"
 
 val platforms = listOf("Windows", "Linux", "Mac OS X")
 
@@ -33,49 +34,41 @@ project {
     params {
         param("teamcity.ui.settings.readOnly", "true")
     }
-    
-    buildTypesOrder = platforms.map { build(it) }
-}
 
-fun Project.build(platform: String) = BuildType {
-    // ID is prepended with Project ID, so don't repeat it here
-    // ID should conform to identifier rules, so just letters, numbers and underscore
-    id("Build_${platform.substringBefore(" ")}")
+    val builds = platforms.map { build(it) }
 
-    // Display name of the build configuration
-    name = "Build ($platform)"
-
-    // Allow to fetch build status through API for badges
-    allowExternalStatus = true
-
-    // What files to publish as build artifacts
-    artifactRules = """
-        +:**/build/libs/*.jar
-        +:**/build/libs/*.klib
-    """.trimIndent()
-
-    params {
-        // This parameter is needed for macOS agent to be compatible
-        param("env.JDK_17", "")
-    }
-
-    // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-
-    // How to build a project
-    steps {
-        gradle {
-            jdkHome = "%env.JDK_18_x64%"
-            jvmArgs = "-Xmx1g"
-            // --continue is needed to run tests on all platforms even if one platform fails
-            tasks = "clean build --continue"
-            buildFile = ""
-            gradleWrapperPath = ""
+    val deployConfigure = deployConfigure()
+    val deploys = platforms.map { deploy(it, deployConfigure) }.apply {
+        reduce { previous, current ->
+            current.apply {
+                // Dependency on previous is needed to serialize deployment builds
+                // TODO: Uploading can be made parallel if we create a version in configure
+                dependsOnSnapshot(previous) {
+                    onDependencyFailure = FailureAction.CANCEL
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+                dependsOnSnapshot(deployConfigure) {
+                    onDependencyFailure = FailureAction.CANCEL
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
         }
     }
 
+    val deployPublish = deployPublish().apply {
+        deploys.forEach {
+            dependsOnSnapshot(it) {
+                onDependencyFailure = FailureAction.CANCEL
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+    }
+
+    buildTypesOrder = builds + deployPublish + deployConfigure + deploys
+}
+
+
+fun Project.build(platform: String) = platform(platform, "Build") {
     triggers {
         vcs {
             triggerRules = """
@@ -85,6 +78,143 @@ fun Project.build(platform: String) = BuildType {
         }
     }
 
+    // How to build a project
+    steps {
+        gradle {
+            name = "Build and Test $platform Binaries"
+            jdkHome = "%env.JDK_18_x64%"
+            jvmArgs = "-Xmx1g"
+            // --continue is needed to run tests on all platforms even if one platform fails
+            tasks = "clean build --continue"
+            buildFile = ""
+            gradleWrapperPath = ""
+        }
+    }
+
+    // What files to publish as build artifacts
+    artifactRules = """
+        +:**/build/libs/*.jar
+        +:**/build/libs/*.klib
+    """.trimIndent()
+
+}
+
+fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
+    apply {
+        dependencies.dependency(build, configure)
+    }
+
+fun BuildType.dependsOnSnapshot(build: BuildType, configure: SnapshotDependency.() -> Unit = {}) = apply {
+    dependencies.dependency(build) {
+        snapshot(configure)
+    }
+}
+
+fun Project.deployConfigure() = BuildType {
+    id("Deploy_Configure")
+    this.name = "Deploy (Configure)"
+    commonConfigure()
+
+    params {
+        // enable editing of this configuration to set up things
+        param("teamcity.ui.settings.readOnly", "false")
+
+        param("bintray-org", "orangy")
+        param("bintray-repo", "maven")
+        param("bintray-user", "orangy")
+        param("bintray-package", "kotlinx-files")
+
+        param(versionParameter, "%build.number%")
+    }
+
+    steps {
+        // Verify that gradle can configure itself and there are no issue with gradle script
+        gradle {
+            name = "Verify Gradle Configuration"
+            tasks = "clean model"
+            buildFile = ""
+            jdkHome = "%env.JDK_18%"
+        }
+
+        // Create version in bintray to run deploy tasks in parallel for platforms
+        script {
+            name = "Create Version on Bintray"
+            scriptContent =
+                """
+curl -d '{"name": "1.1.5", "desc": "",}' --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
+""".trimIndent()
+        }
+    }
+}.also { buildType(it) }
+
+fun Project.deployPublish() = BuildType {
+    id("Deploy_Publish")
+    this.name = "Deploy (Publish)"
+
+    buildNumberPattern = "%build.counter% (%releaseVersion%)"
+    commonConfigure()
+}.also { buildType(it) }
+
+fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platform, "Deploy") {
+    type = BuildTypeSettings.Type.DEPLOYMENT
+    enablePersonalBuilds = false
+    maxRunningBuilds = 1
+    params {
+        param(versionParameter, "${configureBuild.depParamRefs[versionParameter]}")
+    }
+
+    vcs {
+        cleanCheckout = true
+    }
+
+    // How to build a project
+    steps {
+        gradle {
+            name = "Deploy $platform Binaries"
+            jdkHome = "%env.JDK_18_x64%"
+            jvmArgs = "-Xmx1g"
+            gradleParams = "-Pdeploy=true -P${versionParameter}=%${versionParameter}%"
+            tasks = "clean build publishToMavenLocal"
+            buildFile = ""
+            gradleWrapperPath = ""
+        }
+    }
+}
+
+fun Project.platform(platform: String, name: String, configure: BuildType.() -> Unit) = BuildType {
+    // ID is prepended with Project ID, so don't repeat it here
+    // ID should conform to identifier rules, so just letters, numbers and underscore
+    id("${name}_${platform.substringBefore(" ")}")
+    // Display name of the build configuration
+    this.name = "$name ($platform)"
+
+    requirements {
+        contains("teamcity.agent.jvm.os.name", platform)
+    }
+
+    params {
+        // This parameter is needed for macOS agent to be compatible
+        param("env.JDK_17", "")
+    }
+
+    commonConfigure()
+    configure()
+}.also { buildType(it) }
+
+
+fun BuildType.commonConfigure() {
+    requirements {
+        noLessThan("teamcity.agent.hardware.memorySizeMb", "6144")
+    }
+
+    // Allow to fetch build status through API for badges
+    allowExternalStatus = true
+
+    // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
     features {
         feature {
             type = "xml-report-plugin"
@@ -92,12 +222,4 @@ fun Project.build(platform: String) = BuildType {
             param("xmlReportParsing.reportDirs", "+:**/build/reports/*.xml")
         }
     }
-
-    requirements {
-        contains("teamcity.agent.jvm.os.name", platform)
-    }
-}.also { buildType(it) }
-
-
-
-
+}
