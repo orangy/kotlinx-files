@@ -186,6 +186,9 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
             gradleWrapperPath = ""
         }
     }
+}.dependsOnSnapshot(configureBuild) {
+    onDependencyFailure = FailureAction.CANCEL
+    onDependencyCancel = FailureAction.CANCEL
 }
 
 fun Project.platform(platform: String, name: String, configure: BuildType.() -> Unit) = BuildType {
