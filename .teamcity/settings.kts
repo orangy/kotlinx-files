@@ -148,7 +148,7 @@ fun Project.deployConfigure() = BuildType {
             scriptContent =
                 """
 echo '{"name": "%$versionParameter%", "desc": ""}'                    
-curl -d '{"name": "%$versionParameter%", "desc": ""}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
+curl -d '{"name": "%$versionParameter%", "desc": "", "released":"`date +%%FT%%TZ`"}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
 """.trimIndent()
         }
     }
