@@ -32,7 +32,7 @@ kotlin {
             }
         }
     }
-    
+
     sourceSets {
         commonMain {
             dependencies {
@@ -126,6 +126,14 @@ publishing {
 }
 
 afterEvaluate {
+    clean {
+        publishing.repositories.all { repository ->
+            if (repository.name == 'build') {
+                delete += repository.url
+            }
+        }
+    }
+
     task('publishToBuildRepository') { publish ->
         group = 'publishing'
         tasks.withType(PublishToMavenRepository) { task ->
