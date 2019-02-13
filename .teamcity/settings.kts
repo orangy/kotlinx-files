@@ -229,11 +229,5 @@ fun BuildType.commonConfigure() {
             id = "perfmon"
             type = "perfmon"
         }
-
-        feature {
-            type = "xml-report-plugin"
-            param("xmlReportParsing.reportType", "junit")
-            param("xmlReportParsing.reportDirs", "+:**/build/reports/*.xml")
-        }
     }
 }
