@@ -121,13 +121,8 @@ fun Project.deployConfigure() = BuildType {
     params {
         // enable editing of this configuration to set up things
         param("teamcity.ui.settings.readOnly", "false")
-
-        param("bintray-org", "orangy")
-        param("bintray-repo", "maven")
         param("bintray-user", "orangy")
         password("bintray-key", "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07")
-        param("bintray-package", "kotlinx-files")
-
         param(versionParameter, "%build.number%")
     }
 
@@ -137,25 +132,12 @@ fun Project.deployConfigure() = BuildType {
     }
 
     steps {
-        // Verify that gradle can configure itself and there are no issue with gradle script
         gradle {
             name = "Verify Gradle Configuration"
-            tasks = "clean model"
+            tasks = "clean publishBintrayCreateVersion"
+            gradleParams = "-P$versionParameter=%$versionParameter% -PbintrayApiKey=%bintray-key% -PbintrayUser=%bintray-user%"
             buildFile = ""
             jdkHome = "%env.JDK_18%"
-        }
-
-        // Create version in bintray to run deploy tasks in parallel for platforms
-        script {
-            name = "Create Version on Bintray"
-            // add to JSON: , "released":"%system.build.start.date%"
-            // TODO: Figure out how to get the build date :(
-            scriptContent =
-                """
-DATE=`date +%%FT%%TZ`    
-echo '{"name": "%$versionParameter%", "desc": "", "released":"'"${'$'}DATE"'"}'                    
-curl -d '{"name": "%$versionParameter%", "desc": "", "released":"'"${'$'}DATE"'"}' --fail --user %bintray-user%:%bintray-key% -H "Content-Type: application/json" -X POST https://api.bintray.com/packages/%bintray-org%/%bintray-repo%/%bintray-package%/versions
-""".trimIndent()
         }
     }
 }.also { buildType(it) }
@@ -187,7 +169,6 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
         cleanCheckout = true
     }
 
-    // How to build a project
     steps {
         gradle {
             name = "Deploy $platform Binaries"
@@ -233,9 +214,22 @@ fun BuildType.commonConfigure() {
     // Configure VCS, by default use the same and only VCS root from which this configuration is fetched
     vcs {
         root(DslContext.settingsRoot)
+        showDependenciesChanges = true
+        checkoutMode = CheckoutMode.ON_AGENT
+    }
+
+    failureConditions {
+        errorMessage = true
+        nonZeroExitCode = true
+        executionTimeoutMin = 120
     }
 
     features {
+        feature {
+            id = "perfmon"
+            type = "perfmon"
+        }
+
         feature {
             type = "xml-report-plugin"
             param("xmlReportParsing.reportType", "junit")

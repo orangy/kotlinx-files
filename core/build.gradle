@@ -106,9 +106,6 @@ kotlin {
 }
 
 publishing {
-    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('bintrayUser')
-    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('bintrayApiKey')
-
     repositories {
         maven {
             name = 'build'
@@ -121,8 +118,8 @@ publishing {
             def bintrayPackage = project.bintrayPackage
             url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
             credentials {
-                username = user
-                password = key
+                username = project.bintrayUser
+                password = project.bintrayApiKey
             }
         }
     }
