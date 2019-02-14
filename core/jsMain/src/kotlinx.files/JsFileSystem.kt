@@ -21,7 +21,7 @@ class JsFileSystem : FileSystem {
         return true
     }
 
-    private fun deleteRecursively(path: Path): Unit = openDirectory(path).use { directory ->
+    private fun deleteRecursively(path: UnixPath): Unit = openDirectory(path).use { directory ->
         for (child in directory.children) {
             if (isDirectory(child))
                 deleteRecursively(child)

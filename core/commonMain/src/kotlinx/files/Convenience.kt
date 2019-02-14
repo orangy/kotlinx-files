@@ -25,7 +25,7 @@ inline fun Path.readText(charset: Charset = Charsets.UTF_8): String =
 inline fun Path.createFile() = fileSystem.createFile(this)
 inline fun Path.createDirectory() = fileSystem.createDirectory(this)
 
-inline fun Path.deleteFile() {
+inline fun Path.delete() {
     if (fileSystem.delete(this))
         return
     throw IOException("File $this doesn't exist")

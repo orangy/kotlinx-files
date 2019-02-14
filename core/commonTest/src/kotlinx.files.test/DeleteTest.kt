@@ -10,7 +10,7 @@ class DeleteTest : TestBase() {
     fun deleteFile() {
         val file = testFile("delete-file").createFile()
         assertTrue(file.exists())
-        file.deleteFile()
+        file.delete()
         assertFalse(file.exists())
 
     }
@@ -23,7 +23,7 @@ class DeleteTest : TestBase() {
         assertTrue(directory.exists())
         assertTrue(file.exists())
 
-        assertFailsWith<IOException> { directory.deleteFile() }
+        assertFailsWith<IOException> { directory.delete() }
 
         directory.deleteDirectoryIfExists()
         assertFalse(directory.exists())
@@ -35,6 +35,6 @@ class DeleteTest : TestBase() {
         val file = testFile("non-existing")
         assertFalse(file.exists())
         assertFalse(file.deleteFileIfExists())
-        assertFailsWith<IOException> { file.deleteFile() }
+        assertFailsWith<IOException> { file.delete() }
     }
 }

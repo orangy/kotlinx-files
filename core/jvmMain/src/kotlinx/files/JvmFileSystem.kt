@@ -1,7 +1,7 @@
 package kotlinx.files
 
+import kotlinx.io.core.*
 import java.nio.file.*
-import java.util.stream.*
 import kotlin.contracts.*
 import java.nio.file.FileSystem as JavaFileSystem
 import java.nio.file.FileSystems as JavaFileSystems
@@ -27,7 +27,7 @@ class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSyste
         return path
     }
 
-    override fun deleteFile(path: Path): Boolean {
+    override fun delete(path: Path): Boolean {
         checkCompatible(path)
         return Files.deleteIfExists(path.platformPath)
     }
@@ -42,9 +42,27 @@ class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSyste
     override fun copy(source: Path, target: Path): Path {
         checkCompatible(source)
         checkCompatible(target)
-        Files.copy(source.platformPath, target.platformPath)
+        if (isDirectory(source))
+            copyDirectoryRecursive(source, target)
+        else
+            Files.copy(source.platformPath, target.platformPath)
         return target
     }
+
+    private fun copyDirectoryRecursive(source: JvmPath, target: JvmPath): Unit =
+        openDirectory(source).use { directory ->
+            if (!exists(target)) {
+                createDirectory(target)
+            }
+
+            for (sourceChild in directory.children) {
+                val targetChild = JvmPath(this, target.platformPath.resolve(sourceChild.name?.platformPath))
+                if (sourceChild.isDirectory)
+                    copyDirectoryRecursive(sourceChild, targetChild)
+                else
+                    Files.copy(sourceChild.platformPath, targetChild.platformPath)
+            }
+        }
 
     override fun path(name: String, vararg children: String): Path {
         return JvmPath(this, platformFileSystem.getPath(name, *children))
@@ -73,31 +91,33 @@ class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSyste
         )
     }
 
-    override fun openDirectory(path: Path): Directory = TODO()
+    override fun openDirectory(path: Path): JvmDirectory {
+        checkCompatible(path)
+        return JvmDirectory(this, path)
+
+    }
+
     override fun createDirectory(path: Path): Path {
         checkCompatible(path)
-        return JvmPath(this, Files.createDirectories(path.platformPath))
+        return JvmPath(this, Files.createDirectory(path.platformPath))
     }
 
     override fun deleteDirectory(path: Path): Boolean {
         checkCompatible(path)
         if (!Files.exists(path.platformPath))
             return false
-        deleteRecursively(path.platformPath)
+        deleteRecursively(path)
         return true
     }
 
-    private fun deleteRecursively(path: JavaPath) {
-        val children = Files.list(path).collect(Collectors.toList())
-        children.forEach {
-            if (Files.isDirectory(it)) {
-                deleteRecursively(it)
-            } else {
-                Files.delete(it)
-            }
+    private fun deleteRecursively(path: JvmPath): Unit = openDirectory(path).use { directory ->
+        for (child in directory.children) {
+            if (isDirectory(child))
+                deleteRecursively(child)
+            else
+                delete(child)
         }
-
-        Files.delete(path)
+        delete(path)
     }
 
     override fun toString() = "JvmFileSystem for '${platformFileSystem.provider().scheme}'"

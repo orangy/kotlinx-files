@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import kotlinx.io.errors.*
 import platform.posix.*
 
-class PosixDirectory(private val fileSystem: PosixFileSystem, override val path: Path) :
+class PosixDirectory(private val fileSystem: PosixFileSystem, override val path: UnixPath) :
     Directory {
     val dirPtr = opendir(path.toString())
         ?: throw IOException(
@@ -12,8 +12,8 @@ class PosixDirectory(private val fileSystem: PosixFileSystem, override val path:
             PosixException.forErrno()
         )
 
-    override val children = object : Iterable<Path> {
-        override fun iterator() = object : Iterator<Path> {
+    override val children = object : Iterable<UnixPath> {
+        override fun iterator() = object : Iterator<UnixPath> {
             var dirStruct = nextStruct()
 
             private fun nextStruct(): CPointer<dirent>? {
@@ -30,7 +30,7 @@ class PosixDirectory(private val fileSystem: PosixFileSystem, override val path:
 
             override fun hasNext() = dirStruct != null
 
-            override fun next(): Path {
+            override fun next(): UnixPath {
                 if (dirStruct == null)
                     throw NoSuchElementException("There are no more children in directory $path")
                 val name = dirStruct!!.pointed.d_name.toKString()
