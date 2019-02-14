@@ -100,7 +100,6 @@ class PosixFileSystem : FileSystem {
     }
 
     private fun copyFile(source: Path, target: Path) {
-        // TODO it doesn't even work with large files
         openOutput(target).use { output ->
             openInput(source).use { input ->
                 input.copyTo(output)

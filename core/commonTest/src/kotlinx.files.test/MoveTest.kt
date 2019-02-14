@@ -21,7 +21,7 @@ class MoveTest : TestBase() {
     }
 
     @Test
-    fun testCopyDirectory() {
+    fun testMoveDirectory() {
         val directory = testDirectory("move-directory").createDirectory()
         val target = testDirectory("target-directory")
         assertFalse(target.exists())
@@ -32,7 +32,7 @@ class MoveTest : TestBase() {
     }
 
     @Test
-    fun testCopyDirectoryWithContent() {
+    fun testMoveDirectoryWithContent() {
         val expectedContent = ByteArray(42) { it.toByte() }
         val directory = testDirectory("move-directory-with-content").createDirectory()
         val file = Path(directory, "content.txt").createFile()
@@ -54,14 +54,14 @@ class MoveTest : TestBase() {
     }
 
     @Test
-    fun testCopyNothing() {
+    fun testMoveNothing() {
         val file = testFile("nothing")
         val target = testFile("nothing-target")
         assertFailsWith<IOException> { file.moveTo(target) }
     }
 
     @Test
-    fun testCopyToExistingFile() {
+    fun testMoveToExistingFile() {
         val file = testFile("file").createFile()
         val target = testFile("existing-file").createFile()
         assertFailsWith<IOException> { file.moveTo(target) }

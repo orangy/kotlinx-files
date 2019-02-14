@@ -8,7 +8,7 @@ class JsFileSystem : FileSystem {
 
     override fun openDirectory(path: Path): Directory {
         checkCompatible(path)
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return JsDirectory(this, path)
     }
 
     override val isReadOnly: Boolean get() = false
@@ -21,16 +21,12 @@ class JsFileSystem : FileSystem {
         return true
     }
 
-    private fun deleteRecursively(path: Path) {
-        val children = fs.readdirSync(path.str()) as Array<String>
-        for (name in children) {
-            if (name != "." && name != "..") {
-                val childPath = UnixPath(this, "$path/$name")
-                if (childPath.isDirectory)
-                    deleteRecursively(childPath)
-                else
-                    deleteFile(childPath)
-            }
+    private fun deleteRecursively(path: Path): Unit = openDirectory(path).use { directory ->
+        for (child in directory.children) {
+            if (isDirectory(child))
+                deleteRecursively(child)
+            else
+                deleteFile(child)
         }
         deleteFile(path)
     }
@@ -83,14 +79,32 @@ class JsFileSystem : FileSystem {
     override fun copy(source: Path, target: Path): Path {
         checkCompatible(source)
         checkCompatible(target)
-        try {
-            // COPYFILE_EXCL to fail if target exists
-            fs.copyFileSync(source.str(), target.str(), fs.constants.COPYFILE_EXCL)
-        } catch (e: dynamic) {
-            throw IOException("Failed to copy $source to $target: $e")
+        if (isDirectory(source)) {
+            copyDirectoryRecursive(source, target)
+        } else {
+            try {
+                // COPYFILE_EXCL to fail if target exists
+                fs.copyFileSync(source.str(), target.str(), fs.constants.COPYFILE_EXCL)
+            } catch (e: dynamic) {
+                throw IOException("Failed to copy $source to $target: $e")
+            }
         }
 
         return target
+    }
+
+    private fun copyDirectoryRecursive(source: Path, target: Path): Unit = openDirectory(source).use { directory ->
+        if (!exists(target)) {
+            createDirectory(target)
+        }
+
+        for (sourceChild in directory.children) {
+            val targetChild = UnixPath(this, "$target/${sourceChild.name}")
+            if (sourceChild.isDirectory)
+                copyDirectoryRecursive(sourceChild, targetChild)
+            else
+                copy(sourceChild, targetChild)
+        }
     }
 
     override fun move(source: Path, target: Path): Path {
@@ -126,7 +140,6 @@ class JsFileSystem : FileSystem {
 
     override fun openInput(path: Path): FileInput {
         checkCompatible(path)
-        // TODO Doesn't work with large files, can be buffered
         try {
             val fd = fs.openSync(path.toString(), "r");
             return JsFileInput(path, fd)

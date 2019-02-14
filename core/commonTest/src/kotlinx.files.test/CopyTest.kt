@@ -47,10 +47,9 @@ class CopyTest : TestBase() {
 
         directory.copyTo(target)
 
-
         // Content is not copied, but directory is
         assertTrue(target.exists())
-        assertFalse(targetFile.exists())
+        assertTrue(targetFile.exists())
     }
 
     @Test
