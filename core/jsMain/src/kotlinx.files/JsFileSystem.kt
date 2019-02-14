@@ -6,7 +6,7 @@ import kotlin.contracts.*
 
 class JsFileSystem : FileSystem {
 
-    override fun openDirectory(path: Path): Directory {
+    override fun openDirectory(path: Path): JsDirectory {
         checkCompatible(path)
         return JsDirectory(this, path)
     }
@@ -26,9 +26,9 @@ class JsFileSystem : FileSystem {
             if (isDirectory(child))
                 deleteRecursively(child)
             else
-                deleteFile(child)
+                delete(child)
         }
-        deleteFile(path)
+        delete(path)
     }
 
     override fun isDirectory(path: Path): Boolean {
@@ -47,7 +47,7 @@ class JsFileSystem : FileSystem {
         return attributes.isFile() as Boolean
     }
 
-    override fun path(name: String, vararg children: String): Path {
+    override fun path(name: String, vararg children: String): UnixPath {
         if (children.isEmpty()) {
             return UnixPath(this, name)
         }
@@ -59,14 +59,14 @@ class JsFileSystem : FileSystem {
         return fs.existsSync(path.str()) as Boolean
     }
 
-    override fun createFile(path: Path): Path {
+    override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
         val fd = fs.openSync(path.str(), "w")
         fs.closeSync(fd)
         return path
     }
 
-    override fun createDirectory(path: Path): Path {
+    override fun createDirectory(path: Path): UnixPath {
         checkCompatible(path)
         try {
             fs.mkdirSync(path.str())
@@ -76,7 +76,7 @@ class JsFileSystem : FileSystem {
         return path
     }
 
-    override fun copy(source: Path, target: Path): Path {
+    override fun copy(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
         if (isDirectory(source)) {
@@ -107,7 +107,7 @@ class JsFileSystem : FileSystem {
         }
     }
 
-    override fun move(source: Path, target: Path): Path {
+    override fun move(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
         if (target.exists()) {
@@ -124,7 +124,7 @@ class JsFileSystem : FileSystem {
         return target
     }
 
-    override fun deleteFile(path: Path): Boolean {
+    override fun delete(path: Path): Boolean {
         checkCompatible(path)
         return try {
             if (path.isDirectory) {
@@ -138,7 +138,7 @@ class JsFileSystem : FileSystem {
         }
     }
 
-    override fun openInput(path: Path): FileInput {
+    override fun openInput(path: Path): JsFileInput {
         checkCompatible(path)
         try {
             val fd = fs.openSync(path.toString(), "r");
@@ -149,7 +149,7 @@ class JsFileSystem : FileSystem {
     }
 
     @UseExperimental(ExperimentalIoApi::class)
-    override fun openOutput(path: Path): FileOutput {
+    override fun openOutput(path: Path): JsFileOutput {
         checkCompatible(path)
         if (path.isDirectory)
             throw IOException("Cannot create output stream for directory")

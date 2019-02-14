@@ -26,7 +26,7 @@ inline fun Path.createFile() = fileSystem.createFile(this)
 inline fun Path.createDirectory() = fileSystem.createDirectory(this)
 
 inline fun Path.deleteFile() {
-    if (fileSystem.deleteFile(this))
+    if (fileSystem.delete(this))
         return
     throw IOException("File $this doesn't exist")
 }
@@ -37,7 +37,7 @@ inline fun Path.deleteDirectory() {
     throw IOException("Directory $this doesn't exist")
 }
 
-inline fun Path.deleteFileIfExists() = fileSystem.deleteFile(this)
+inline fun Path.deleteFileIfExists() = fileSystem.delete(this)
 inline fun Path.deleteDirectoryIfExists() = fileSystem.deleteDirectory(this)
 
 inline val Path.isDirectory: Boolean get() = fileSystem.isDirectory(this)

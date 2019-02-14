@@ -9,7 +9,7 @@ import kotlin.contracts.*
 @UseExperimental(ExperimentalIoApi::class)
 class PosixFileSystem : FileSystem {
 
-    override fun path(name: String, vararg children: String): Path {
+    override fun path(name: String, vararg children: String): UnixPath {
         if (children.isEmpty()) {
             return UnixPath(this, name)
         }
@@ -21,14 +21,15 @@ class PosixFileSystem : FileSystem {
         return access(path.str(), F_OK) == 0
     }
 
-    override fun openDirectory(path: Path): Directory {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun openDirectory(path: Path): PosixDirectory {
+        checkCompatible(path)
+        return PosixDirectory(this, path)
     }
 
     override val isReadOnly: Boolean get() = false
 
-    override fun isDirectory(path: Path): Boolean = readFileType(path) == S_IFDIR
-    override fun isFile(path: Path): Boolean = readFileType(path) == S_IFREG
+    override fun isDirectory(path: Path): Boolean = exists(path) && readFileType(path) == S_IFDIR
+    override fun isFile(path: Path): Boolean = exists(path) && readFileType(path) == S_IFREG
 
     private fun readFileType(path: Path): Int = memScoped {
         val stat = alloc<stat>()
@@ -43,14 +44,14 @@ class PosixFileSystem : FileSystem {
     }
 
 
-    override fun createFile(path: Path): Path {
+    override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
         // 0x1B6 hex == 438 == 0666 oct
         open(path.str(), O_WRONLY or O_CREAT, 0x1B6)
         return path
     }
 
-    override fun createDirectory(path: Path): Path {
+    override fun createDirectory(path: Path): UnixPath {
         checkCompatible(path)
         // 0x1FF hex == 511 == 0777 oct
         if (mkdir(path.str(), 0x1FF) == -1) {
@@ -63,7 +64,7 @@ class PosixFileSystem : FileSystem {
         return path
     }
 
-    override fun copy(source: Path, target: Path): Path {
+    override fun copy(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
 
@@ -72,7 +73,7 @@ class PosixFileSystem : FileSystem {
         }
 
         when {
-            source.isDirectory -> createDirectory(target) // TODO: copy contents?
+            source.isDirectory -> copyDirectoryRecursive(source, target) 
             source.isFile -> copyFile(source, target)
             else -> throw IOException("Links are not supported by implementation")
         }
@@ -80,7 +81,21 @@ class PosixFileSystem : FileSystem {
         return target
     }
 
-    override fun move(source: Path, target: Path): Path {
+    private fun copyDirectoryRecursive(source: Path, target: Path): Unit = openDirectory(source).use { directory ->
+        if (!exists(target)) {
+            createDirectory(target)
+        }
+
+        for (sourceChild in directory.children) {
+            val targetChild = UnixPath(this, "$target/${sourceChild.name}")
+            if (sourceChild.isDirectory)
+                copyDirectoryRecursive(sourceChild, targetChild)
+            else
+                copy(sourceChild, targetChild)
+        }
+    }
+
+    override fun move(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
 
@@ -113,35 +128,18 @@ class PosixFileSystem : FileSystem {
         deleteRecursively(path)
         return true
     }
-
-    private fun deleteRecursively(path: Path) {
-        val dirPtr = opendir(path.str())
-            ?: throw IOException("Failed to open directory $path", PosixException.forErrno())
-
-        var dirStruct = readdir(dirPtr)
-        while (dirStruct != null) {
-            val name = dirStruct.pointed.d_name.toKString()
-            if (name != "." && name != "..") {
-                val childPath = UnixPath(this, "$path/$name")
-                if (childPath.isDirectory)
-                    deleteRecursively(childPath)
-                else
-                    deleteFile(childPath)
-            }
-
-            dirStruct = readdir(dirPtr)
+    
+    private fun deleteRecursively(path: Path) : Unit = openDirectory(path).use { directory ->
+        for (child in directory.children) {
+            if (isDirectory(child))
+                deleteRecursively(child)
+            else
+                delete(child)
         }
-        if (closedir(dirPtr) == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to close directory $path with error code $errno",
-                PosixException.forErrno(errno)
-            )
-        }
-        deleteFile(path)
+        delete(path)
     }
 
-    override fun deleteFile(path: Path): Boolean {
+    override fun delete(path: Path): Boolean {
         checkCompatible(path)
         if (!exists(path))
             return false

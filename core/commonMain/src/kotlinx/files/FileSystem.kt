@@ -13,7 +13,7 @@ interface FileSystem {
     fun openOutput(path: Path): FileOutput
 
     fun createFile(path: Path): Path
-    fun deleteFile(path: Path): Boolean
+    fun delete(path: Path): Boolean
 
     fun createDirectory(path: Path): Path
     fun deleteDirectory(path: Path): Boolean
