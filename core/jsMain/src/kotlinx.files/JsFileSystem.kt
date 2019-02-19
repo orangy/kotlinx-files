@@ -5,6 +5,8 @@ import kotlinx.io.errors.*
 import kotlin.contracts.*
 
 class JsFileSystem : FileSystem {
+    override val pathSeparator: String
+        get() = path.sep
 
     override fun openDirectory(path: Path): JsDirectory {
         checkCompatible(path)
@@ -138,10 +140,11 @@ class JsFileSystem : FileSystem {
         val Default = JsFileSystem()
 
         internal val fs: dynamic = require("fs")
+        internal val path: dynamic = require("path")
     }
 }
 
-private fun Path.str(): String = (this as UnixPath).normalizedPath
+private fun Path.str(): String = toString()
 
 private external fun require(module: String): dynamic
 

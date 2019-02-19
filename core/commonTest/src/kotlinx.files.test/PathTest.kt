@@ -47,14 +47,15 @@ class PathTest {
     fun testPathConcatenation() {
         // Where is my parametrized :(
 
-        checkConcatenation(path("a"), "b", "a/b")
-        checkConcatenation(path("a"), "/b/", "a/b")
-        checkConcatenation(path("foo/../.."), "../../", "foo/../../../..")
-        checkConcatenation(path(""), "/", "/")
-        checkConcatenation(path("/"), "", "/")
-        checkConcatenation(path("."), "bar", "./bar")
-        checkConcatenation(path("bar"), ".", "bar/.")
-        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt/foo.txt")
+        val ps = fs().pathSeparator
+        checkConcatenation(path("a"), "b", "a${ps}b")
+        checkConcatenation(path("a"), "/b/", "a${ps}b")
+        checkConcatenation(path("foo/../.."), "../../", "foo${ps}..${ps}..${ps}..${ps}..")
+        checkConcatenation(path(""), "/", "${ps}")
+        checkConcatenation(path("/"), "", "${ps}")
+        checkConcatenation(path("."), "bar", ".${ps}bar")
+        checkConcatenation(path("bar"), ".", "bar${ps}.")
+        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${ps}foo.txt")
     }
 
     private fun checkConcatenation(base: Path, other: String, expected: String) {

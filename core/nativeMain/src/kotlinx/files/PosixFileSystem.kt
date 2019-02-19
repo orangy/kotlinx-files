@@ -7,6 +7,8 @@ import kotlin.contracts.*
 
 @UseExperimental(ExperimentalIoApi::class)
 class PosixFileSystem : FileSystem {
+    override val pathSeparator: String
+        get() = posixPathSeparator
 
     override fun path(name: String, vararg children: String): UnixPath {
         if (children.isEmpty()) {

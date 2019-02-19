@@ -7,6 +7,9 @@ import java.nio.file.FileSystems as JavaFileSystems
 import java.nio.file.Path as JavaPath
 
 class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSystem {
+    override val pathSeparator: String
+        get() = platformFileSystem.separator
+    
     override val isReadOnly: Boolean
         get() = platformFileSystem.isReadOnly
 

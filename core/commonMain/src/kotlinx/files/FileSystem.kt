@@ -10,6 +10,8 @@ interface FileSystem {
 
     // Write operations
     val isReadOnly : Boolean
+    val pathSeparator: String
+
     fun openOutput(path: Path): FileOutput
 
     fun createFile(path: Path): Path

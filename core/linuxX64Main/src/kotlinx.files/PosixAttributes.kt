@@ -28,9 +28,9 @@ private fun attributesFromStat(stat: stat): PosixFileAttributes {
         isDirectory = fileType == S_IFDIR,
         isFile = fileType == S_IFREG,
         isSymbolicLink = fileType == S_IFLNK,
-        creationTimeUs = stat.st_ctim.tv_usec,
-        lastAccessTimeUs = stat.st_atim.tv_usec,
-        lastModifiedTimeUs = stat.st_mtim.tv_usec,
+        creationTimeUs = stat.st_ctim.micros(),
+        lastAccessTimeUs = stat.st_atim.micros(),
+        lastModifiedTimeUs = stat.st_mtim.micros(),
         sizeBytes = stat.st_size,
         permissions = permissions
     )

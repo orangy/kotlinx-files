@@ -28,7 +28,7 @@ private fun attributesFromStat(stat: _stat64): PosixFileAttributes {
     return PosixFileAttributes(
         isDirectory = fileType == S_IFDIR,
         isFile = fileType == S_IFREG,
-        isSymbolicLink = false // TODO: fileType == S_IFLNK,
+        isSymbolicLink = false, // TODO: fileType == S_IFLNK
         creationTimeUs = stat.st_ctimespec.micros(),
         lastAccessTimeUs = stat.st_atimespec.micros(),
         lastModifiedTimeUs = stat.st_mtimespec.micros(),
