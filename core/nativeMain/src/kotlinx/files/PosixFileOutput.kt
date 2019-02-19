@@ -21,7 +21,9 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
                     PosixException.forErrno(errno)
                 )
             }
-            return stat.st_size
+            
+            @Suppress("RemoveRedundantCallsOfConversionMethods")
+            return stat.st_size.toLong() // TODO: Find why on Windows this member is Int
         }
 
     override val position: Long
