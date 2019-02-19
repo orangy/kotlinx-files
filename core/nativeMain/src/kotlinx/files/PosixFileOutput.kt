@@ -13,17 +13,16 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
     override val size: Long
         get() = memScoped {
             checkClosed()
-            val stat = alloc<stat>()
-            if (fstat(fileDescriptor, stat.ptr) == -1) {
+            val stat = alloc<stat64>()
+            if (fstat64(fileDescriptor, stat.ptr) == -1) {
                 val errno = errno
                 throw IOException(
-                    "Failed to call 'fstat' on file $identity with error code $errno",
+                    "Failed to call 'fstat64' on file $identity with error code $errno",
                     PosixException.forErrno(errno)
                 )
             }
             
-            @Suppress("RemoveRedundantCallsOfConversionMethods")
-            return stat.st_size.toLong() // TODO: Find why on Windows this member is Int
+            return stat.st_size
         }
 
     override val position: Long
