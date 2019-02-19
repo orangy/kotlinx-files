@@ -1,12 +1,11 @@
 package kotlinx.files
 
 import kotlinx.cinterop.*
-import kotlinx.cinterop.internal.*
 import platform.posix.*
 import kotlinx.io.errors.*
 
-fun winstat(@CCall.CString _Filename: String?, _Stat: CValuesRef<_stat64>?): Int = memScoped {
-    stat64!!(_Filename?.cstr?.getPointer(memScope), _Stat?.getPointer(memScope))
+fun winstat(path: String?, _Stat: CValuesRef<_stat64>?): Int = memScoped {
+    stat64!!(path?.cstr?.getPointer(memScope), _Stat?.getPointer(memScope))
 }
 
 fun winfstat(descriptor: Int, _Stat: CValuesRef<_stat64>?): Int = memScoped {
