@@ -37,7 +37,7 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
         }
         if (size < 0) {
             buffer.release(pool)
-            throw PosixException.forErrno(posixFunctionName = "read()").wrapIO()
+            throw IOException("Failed to read from FileInput for $identity.", PosixException.forErrno())
         }
 
         return buffer
@@ -50,11 +50,8 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
         if (close(fileDescriptor) != 0) {
             val error = errno
             if (error != EBADF) { // EBADF is already closed or not opened
-                throw PosixException.forErrno(error, "close()").wrapIO()
+                throw IOException("Failed to close FileInput for $identity.", PosixException.forErrno(error))
             }
         }
     }
 }
-
-internal fun PosixException.wrapIO(): IOException =
-    IOException("I/O operation failed due to posix error code $errno", this)

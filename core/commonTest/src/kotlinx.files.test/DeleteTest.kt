@@ -23,8 +23,7 @@ class DeleteTest : TestBase() {
         assertTrue(directory.exists())
         assertTrue(file.exists())
 
-        // TODO: Change assertion to IOException when PosixException implements it
-        assertFailsWith<Exception> { directory.delete() }
+        assertFailsWith<IOException> { directory.delete() }
 
         assertFalse(directory.deleteDirectoryIfExists())
         assertTrue(directory.exists())

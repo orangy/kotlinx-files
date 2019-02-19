@@ -7,10 +7,7 @@ import platform.posix.*
 class PosixDirectory(private val fileSystem: PosixFileSystem, override val path: UnixPath) :
     Directory {
     val dirPtr = opendir(path.toString())
-        ?: throw IOException(
-            "Failed to open directory $path",
-            PosixException.forErrno()
-        )
+        ?: throw IOException("Failed to open directory $path.", PosixException.forErrno())
 
     override val children = object : Iterable<UnixPath> {
         override fun iterator() = object : Iterator<UnixPath> {
@@ -44,10 +41,6 @@ class PosixDirectory(private val fileSystem: PosixFileSystem, override val path:
     override fun close() {
         if (closedir(dirPtr) != -1)
             return
-        val errno = errno
-        throw IOException(
-            "Failed to close directory $path with error code $errno",
-            PosixException.forErrno(errno)
-        )
+        throw IOException("Failed to close directory $path.", PosixException.forErrno())
     }
 }

@@ -46,7 +46,7 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
     override fun flush(buffer: IoBuffer) {
         while (buffer.canRead()) {
             if (kotlinx.io.streams.write(fileDescriptor, buffer) <= 0) {
-                throw PosixException.forErrno(posixFunctionName = "write()").wrapIO()
+                throw IOException("Failed to write to FileOutput for $identity.", PosixException.forErrno())
             }
         }
     }
@@ -63,7 +63,7 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
         if (close(fileDescriptor) != 0) {
             val error = errno
             if (error != EBADF) { // EBADF is already closed or not opened
-                throw PosixException.forErrno(error, posixFunctionName = "close()").wrapIO()
+                throw IOException("Failed to close FileOutput for $identity.", PosixException.forErrno(error))
             }
         }
     }

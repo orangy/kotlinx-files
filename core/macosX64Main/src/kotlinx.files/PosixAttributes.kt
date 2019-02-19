@@ -8,11 +8,7 @@ actual fun Path.stat(): PosixFileAttributes = memScoped {
     val path = this@stat.toString()
     val stat = alloc<stat>()
     if (lstat(path, stat.ptr) == -1) {
-        val errno = errno
-        throw IOException(
-            "Failed to call 'lstat' on file $path with error code $errno",
-            PosixException.forErrno(errno)
-        )
+        throw IOException("Failed to call 'lstat' on file $path.", PosixException.forErrno())
     }
 
     val fileType = stat.st_mode.toInt() and S_IFMT

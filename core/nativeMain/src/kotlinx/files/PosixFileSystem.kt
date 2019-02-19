@@ -1,6 +1,5 @@
 package kotlinx.files
 
-import kotlinx.cinterop.*
 import kotlinx.io.core.*
 import kotlinx.io.errors.*
 import platform.posix.*
@@ -41,11 +40,7 @@ class PosixFileSystem : FileSystem {
     override fun createDirectory(path: Path): UnixPath {
         checkCompatible(path)
         if (compat_mkdir(path.toString()) == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to create directory $path with error code $errno",
-                PosixException.forErrno(errno)
-            )
+            throw IOException("Failed to create directory $path with error code $errno", PosixException.forErrno())
         }
         return path
     }
@@ -69,7 +64,7 @@ class PosixFileSystem : FileSystem {
 
         return target
     }
-    
+
     override fun move(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
@@ -79,11 +74,7 @@ class PosixFileSystem : FileSystem {
         }
 
         if (rename(source.toString(), target.toString()) == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to move $source to $target with error code $errno",
-                PosixException.forErrno(errno)
-            )
+            throw IOException("Failed to move $source to $target", PosixException.forErrno())
         }
 
         return target
@@ -112,11 +103,13 @@ class PosixFileSystem : FileSystem {
 
         val error = if (hasError) errno else 0
 
+        if (error == ENOTEMPTY) {
+            // TODO: directory not empty, what to do?
+            return false
+        }
+        
         if (error != 0 && error != ENOENT) {
-            throw IOException(
-                "Failed to delete $path (isDirectory = $isDirectory) with error code $error",
-                PosixException.forErrno(error)
-            )
+            throw IOException("Failed to delete $path (isDirectory = $isDirectory)", PosixException.forErrno(error))
         }
 
         return error != ENOENT
@@ -128,11 +121,7 @@ class PosixFileSystem : FileSystem {
         val stringPath = path.toString()
         val fd = open(stringPath, O_RDONLY)
         if (fd == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to open $path for reading with error code $errno",
-                PosixException.forErrno(errno)
-            )
+            throw IOException("Failed to open $path for reading.", PosixException.forErrno())
         }
 
         return PosixFileInput(stringPath, fd)
@@ -144,11 +133,7 @@ class PosixFileSystem : FileSystem {
         val stringPath = path.toString()
         val fd = open(stringPath, O_CREAT or O_WRONLY or O_TRUNC, 0x1B6) // TODO constant
         if (fd == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to open $path for writing with error code $errno",
-                PosixException.forErrno(errno)
-            )
+            throw IOException("Failed to open $path for writing.", PosixException.forErrno())
         }
 
         return PosixFileOutput(stringPath, fd)
