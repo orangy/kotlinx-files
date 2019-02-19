@@ -2,7 +2,8 @@ package kotlinx.files
 
 import platform.posix.*
 
-expect fun Path.stat(): PosixFileAttributes
+expect fun readAttributes(path: Path): PosixFileAttributes
+expect fun readAttributes(fd: Int): PosixFileAttributes
 
 data class PosixFileAttributes(
     val isDirectory: Boolean,

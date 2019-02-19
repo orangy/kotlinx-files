@@ -11,18 +11,10 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
     private var positionValue = 0L
 
     override val size: Long
-        get() = memScoped {
+        get()  {
             checkClosed()
-            val stat = alloc<stat64>()
-            if (fstat64(fileDescriptor, stat.ptr) == -1) {
-                val errno = errno
-                throw IOException(
-                    "Failed to call 'fstat64' on file $identity with error code $errno",
-                    PosixException.forErrno(errno)
-                )
-            }
-            
-            return stat.st_size
+            val attributes = readAttributes(fileDescriptor)
+            return attributes.sizeBytes
         }
 
     override val position: Long

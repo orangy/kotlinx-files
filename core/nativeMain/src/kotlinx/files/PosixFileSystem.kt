@@ -27,8 +27,8 @@ class PosixFileSystem : FileSystem {
 
     override val isReadOnly: Boolean get() = false
 
-    override fun isDirectory(path: Path): Boolean = exists(path) && path.stat().isDirectory
-    override fun isFile(path: Path): Boolean = exists(path) && path.stat().isFile
+    override fun isDirectory(path: Path): Boolean = exists(path) && readAttributes(path).isDirectory
+    override fun isFile(path: Path): Boolean = exists(path) && readAttributes(path).isFile
 
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
