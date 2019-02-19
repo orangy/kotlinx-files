@@ -33,7 +33,7 @@ class PosixFileSystem : FileSystem {
 
     private fun readFileType(path: Path): Int = memScoped {
         val stat = alloc<stat>()
-        if (lstat(path.toString(), stat.ptr) == -1) {
+        if (compat_lstat(path.toString(), stat.ptr) == -1) {
             val errno = errno
             throw IOException(
                 "Failed to call 'lstat' on file $path with error code $errno",
@@ -213,3 +213,5 @@ private fun PosixFileSystem.checkCompatible(path: Path) {
         return
     throw IllegalStateException("FileSystem ${path.fileSystem} for path $path is not compatible with $this")
 }
+
+expect fun compat_lstat(path: String, ptr: CPointer<stat>): Int

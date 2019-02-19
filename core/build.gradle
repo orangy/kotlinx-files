@@ -1,18 +1,24 @@
+import org.jetbrains.kotlin.konan.target.HostManager
+
 plugins {
     id 'maven-publish'
 }
 
+project.ext.hostManager = new HostManager()
+
 apply plugin: 'kotlin-multiplatform'
 
-def ideaActive = System.getProperty('idea.active') == 'true'
+apply from: rootProject.file("gradle/utility.gradle")
 
 kotlin {
-    if (ideaActive) {
-        macosX64('native')
+    if (project.ext.ideaActive) {
+        targets {
+            project.ext.nativeTarget = fromPreset(project.ext.ideaPreset, 'native')
+        }
     } else {
-        macosX64('macos64')
-        linuxX64('linux64')
-        mingwX64('windows64')
+        macosX64('macosX64')
+        linuxX64('linuxX64')
+        mingwX64('windowsX64')
     }
 
     jvm {
@@ -30,6 +36,17 @@ kotlin {
                 moduleKind = "umd"
                 metaInfo = true
             }
+        }
+    }
+
+    sourceSets.all {
+        kotlin.srcDirs = ["$it.name/src"]
+        resources.srcDirs = ["$it.name/resources"]
+        languageSettings {
+            progressiveMode = true
+            useExperimentalAnnotation("kotlin.Experimental")
+            useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+            useExperimentalAnnotation('kotlinx.io.core.ExperimentalIoApi')
         }
     }
 
@@ -73,34 +90,26 @@ kotlin {
                 api 'org.jetbrains.kotlin:kotlin-test-js'
             }
         }
-
-        nativeMain.dependencies {
-            api "org.jetbrains.kotlinx:kotlinx-io-native:$kotlinx_io_version"
-        }
-
-        if (!ideaActive) {
+        
+        if (ideaActive) {
+            nativeMain {
+                kotlin.srcDir("${project.ext.nativeTarget.preset.name}Main/src")      
+            }
+        } else {
             nativeMain {}
-
             nativeTest {}
 
-            configure([linux64Main, macos64Main, windows64Main]) {
+            configure([linuxX64Main, macosX64Main, windowsX64Main]) {
                 dependsOn nativeMain
             }
 
-            configure([linux64Test, macos64Test, windows64Test]) {
+            configure([linuxX64Test, macosX64Test, windowsX64Test]) {
                 dependsOn nativeTest
             }
         }
-    }
 
-    sourceSets.all {
-        kotlin.srcDirs = ["$it.name/src"]
-        resources.srcDirs = ["$it.name/resources"]
-        languageSettings {
-            progressiveMode = true
-            useExperimentalAnnotation("kotlin.Experimental")
-            useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
-            useExperimentalAnnotation('kotlinx.io.core.ExperimentalIoApi')
+        nativeMain.dependencies {
+            api "org.jetbrains.kotlinx:kotlinx-io-native:$kotlinx_io_version"
         }
     }
 }
