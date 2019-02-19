@@ -1,20 +1,29 @@
 package kotlinx.files
 
 import kotlinx.cinterop.*
-import kotlinx.io.errors.*
+import kotlinx.cinterop.internal.*
 import platform.posix.*
+import kotlinx.io.errors.*
+
+fun winstat(@CCall.CString _Filename: String?, _Stat: CValuesRef<_stat64>?): Int = memScoped {
+    stat64!!(_Filename?.cstr?.getPointer(memScope), _Stat?.getPointer(memScope))
+}
+
+fun winfstat(descriptor: Int, _Stat: CValuesRef<_stat64>?): Int = memScoped {
+    fstat64!!(descriptor, _Stat?.getPointer(memScope))
+}
 
 actual fun readAttributes(path: Path): PosixFileAttributes = memScoped {
     val stat = alloc<_stat64>()
-    if (stat64(path.toString(), stat.ptr) == -1) {
-        throw IOException("Failed to call 'lstat' on file $path.", PosixException.forErrno())
+    if (winstat(path.toString(), stat.ptr) == -1) {
+        throw IOException("Failed to call 'stat' on file $path.", PosixException.forErrno())
     }
     attributesFromStat(stat)
 }
 
 actual fun readAttributes(fd: Int): PosixFileAttributes = memScoped {
     val stat = alloc<_stat64>()
-    if (fstat64(fd, stat.ptr) == -1) {
+    if (winfstat(fd, stat.ptr) == -1) {
         throw IOException("Failed to call 'fstat' on descriptor $fd.", PosixException.forErrno())
     }
     attributesFromStat(stat)
@@ -29,13 +38,15 @@ private fun attributesFromStat(stat: _stat64): PosixFileAttributes {
         isDirectory = fileType == S_IFDIR,
         isFile = fileType == S_IFREG,
         isSymbolicLink = false, // TODO: fileType == S_IFLNK
-        creationTimeUs = stat.st_ctimespec.micros(),
-        lastAccessTimeUs = stat.st_atimespec.micros(),
-        lastModifiedTimeUs = stat.st_mtimespec.micros(),
+        creationTimeUs = stat.st_ctime.micros(),
+        lastAccessTimeUs = stat.st_atime.micros(),
+        lastModifiedTimeUs = stat.st_mtime.micros(),
         sizeBytes = stat.st_size,
         permissions = permissions
     )
 }
+
+private fun __time64_t.micros(): Long = this * 1000000L
 
 fun PosixFilePermissions.Companion.parse(mode: Int): Set<PosixFilePermissions> {
     val result = mutableSetOf<PosixFilePermissions>()

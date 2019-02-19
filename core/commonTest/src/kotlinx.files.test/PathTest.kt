@@ -4,9 +4,10 @@ import kotlinx.files.*
 import kotlin.test.*
 
 class PathTest {
-    private fun fs() = FileSystems.Default
+    private val fs = FileSystems.Default
+    private val sep = fs.pathSeparator
 
-    private fun path(path: String) = UnixPath(fs(), path)
+    private fun path(path: String) = UnixPath(fs, path)
     
     @Test
     fun testEmptyPath() {
@@ -28,11 +29,11 @@ class PathTest {
 
     @Test
     fun testRoot() {
-        val path = path("/")
+        val path = path(sep)
         assertTrue(path.isAbsolute)
         assertNull(path.name)
         assertEquals(0, path.componentCount)
-        assertEquals("/", path.toString())
+        assertEquals(sep, path.toString())
         assertNull(path.parent)
         assertFailsWith<IllegalArgumentException> { path.component(0) }
     }
@@ -47,15 +48,14 @@ class PathTest {
     fun testPathConcatenation() {
         // Where is my parametrized :(
 
-        val ps = fs().pathSeparator
-        checkConcatenation(path("a"), "b", "a${ps}b")
-        checkConcatenation(path("a"), "/b/", "a${ps}b")
-        checkConcatenation(path("foo/../.."), "../../", "foo${ps}..${ps}..${ps}..${ps}..")
-        checkConcatenation(path(""), "/", "${ps}")
-        checkConcatenation(path("/"), "", "${ps}")
-        checkConcatenation(path("."), "bar", ".${ps}bar")
-        checkConcatenation(path("bar"), ".", "bar${ps}.")
-        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${ps}foo.txt")
+        checkConcatenation(path("a"), "b", "a${sep}b")
+        checkConcatenation(path("a"), "/b/", "a${sep}b")
+        checkConcatenation(path("foo/../.."), "../../", "foo$sep..$sep..$sep..$sep..")
+        checkConcatenation(path(""), "/", sep)
+        checkConcatenation(path("/"), "", sep)
+        checkConcatenation(path("."), "bar", ".${sep}bar")
+        checkConcatenation(path("bar"), ".", "bar$sep.")
+        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${sep}foo.txt")
     }
 
     private fun checkConcatenation(base: Path, other: String, expected: String) {
@@ -77,19 +77,21 @@ class PathTest {
 
     @Test
     fun testRelativePathSlashes() {
-        checkSlashes(path("foo/bar//test///file.txt"))
-        checkSlashes(path("foo/bar//test///file.txt/"))
-        checkSlashes(path("foo/bar//test/file.txt//"))
+        checkSlashes("foo/bar//test///file.txt")
+        checkSlashes("foo/bar//test///file.txt/")
+        checkSlashes("foo/bar//test/file.txt//")
     }
 
     @Test
     fun testAbsoluteRelativePathSlashes() {
-        checkSlashes(path("/foo/bar//test///file.txt"), "/")
-        checkSlashes(path("/foo/bar//test///file.txt/"), "/")
-        checkSlashes(path("/foo/bar//test/file.txt//"), "/")
+        checkSlashes("/foo/bar//test///file.txt", "/")
+        checkSlashes("/foo/bar//test///file.txt/", "/")
+        checkSlashes("/foo/bar//test/file.txt//", "/")
     }
 
-    private fun checkSlashes(path: Path, prefix: String = "") {
+    private fun checkSlashes(forwardSlashPath: String, prefix: String = "") {
+        val path = path(forwardSlashPath.replace("/", sep))
+    
         assertEquals("file.txt", path.name.toString())
         assertEquals(4, path.componentCount)
         assertEquals(prefix + "foo/bar/test/file.txt", path.toString())
