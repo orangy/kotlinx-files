@@ -3,26 +3,43 @@ package kotlinx.files
 import kotlinx.io.core.*
 import kotlinx.io.errors.*
 
-class JsFileOutput(override val path: UnixPath, private val fileDescriptor: Int) : AbstractOutput(), FileOutput {
+class JsFileOutput(override val identity: String, private val fileDescriptor: Int) : AbstractOutput(), FileOutput {
+    private var closed = false
+    private var positionValue = 0L
+
     override val size: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() {
+            checkClosed()
+            val attributes = JsFileSystem.fs.fstatSync(fileDescriptor)
+            return attributes.size
+        }
+    
     override val position: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() {
+            checkClosed()
+            return positionValue
+        }
 
     override fun seek(position: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        checkClosed()
+        flush()
+        positionValue = position
     }
-
-    private var closed = false
 
     override fun flush(buffer: IoBuffer) {
         try {
-            buffer.readDirect { view ->
-                JsFileSystem.fs.writeSync(fileDescriptor, view)
+            val size = buffer.readDirect { view ->
+                JsFileSystem.fs.writeSync(fileDescriptor, view, view.byteOffset, view.byteLength, positionValue)
             }
+            positionValue += size
         } catch (e: dynamic) {
-            throw IOException("Failed to write to output stream for $path: $e")
+            throw IOException("Failed to write to output stream for $identity: $e")
         }
+    }
+
+    private fun checkClosed() {
+        if (closed)
+            throw IOException("FileOutput for $identity has already been closed.")
     }
 
     override fun closeDestination() {

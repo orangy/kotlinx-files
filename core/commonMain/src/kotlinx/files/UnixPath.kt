@@ -109,6 +109,7 @@ class UnixPath private constructor(
 
         other as UnixPath
 
+        if (fileSystem != other.fileSystem) return false
         if (normalizedPath != other.normalizedPath) return false
 
         return true

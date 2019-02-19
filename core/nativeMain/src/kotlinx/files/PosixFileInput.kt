@@ -8,7 +8,7 @@ import platform.posix.*
 
 private const val SZERO: ssize_t = 0
 
-class PosixFileInput(override val path: UnixPath, private val fileDescriptor: Int) : AbstractInput(), FileInput {
+class PosixFileInput(override val identity: String, private val fileDescriptor: Int) : AbstractInput(), FileInput {
     private var closed = false
 
     init {

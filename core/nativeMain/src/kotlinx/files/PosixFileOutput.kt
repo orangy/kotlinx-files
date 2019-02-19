@@ -1,21 +1,41 @@
 package kotlinx.files
 
+import kotlinx.cinterop.*
 import kotlinx.io.core.*
 import kotlinx.io.errors.*
 import kotlinx.io.internal.utils.*
 import platform.posix.*
 
-class PosixFileOutput(override val path: UnixPath, private val fileDescriptor: Int) : AbstractOutput(), FileOutput {
+class PosixFileOutput(override val identity: String, private val fileDescriptor: Int) : AbstractOutput(), FileOutput {
+    private var closed = false
+    private var positionValue = 0L
+
     override val size: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = memScoped {
+            checkClosed()
+            val stat = alloc<stat>()
+            if (fstat(fileDescriptor, stat.ptr) == -1) {
+                val errno = errno
+                throw IOException(
+                    "Failed to call 'fstat' on file $identity with error code $errno",
+                    PosixException.forErrno(errno)
+                )
+            }
+            return stat.st_size
+        }
+
     override val position: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() {
+            checkClosed()
+            return positionValue
+        }
 
     override fun seek(position: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        checkClosed()
+        flush()
+        positionValue = position
     }
 
-    private var closed = false
 
     init {
         check(fileDescriptor >= 0) { "Illegal fileDescriptor: $fileDescriptor" }
@@ -28,6 +48,11 @@ class PosixFileOutput(override val path: UnixPath, private val fileDescriptor: I
                 throw PosixException.forErrno(posixFunctionName = "write()").wrapIO()
             }
         }
+    }
+
+    private fun checkClosed() {
+        if (closed)
+            throw IOException("FileOutput for $identity has already been closed.")
     }
 
     override fun closeDestination() {

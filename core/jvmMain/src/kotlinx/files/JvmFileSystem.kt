@@ -75,13 +75,13 @@ class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSyste
 
     override fun openInput(path: Path): FileInput {
         checkCompatible(path)
-        return JvmFileInput(path, Files.newByteChannel(path.platformPath))
+        return JvmFileInput(path.toString(), Files.newByteChannel(path.platformPath))
     }
 
     override fun openOutput(path: Path): FileOutput {
         checkCompatible(path)
         return JvmFileOutput(
-            path,
+            path.toString(),
             Files.newByteChannel(
                 path.platformPath,
                 StandardOpenOption.WRITE,

@@ -19,6 +19,11 @@ inline fun Path(name: String, vararg children: String): Path = FileSystems.Defau
 inline fun Path(base: Path, vararg children: String): Path = FileSystems.Default.path(base.toString(), *children)
 
 inline fun Path.openInput(): FileInput = fileSystem.openInput(this)
+inline fun Path.openDirectory(): Directory = fileSystem.openDirectory(this)
+
+// TODO: should it be in public API?
+fun Path.list(): List<Path> = openDirectory().use { it.children.toList() }
+
 inline fun Path.readText(charset: Charset = Charsets.UTF_8): String =
     fileSystem.openInput(this).use { it.readText(charset) }
 

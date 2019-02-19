@@ -45,8 +45,6 @@ class MoveTest : TestBase() {
 
         directory.moveTo(target)
 
-
-        // Content is not copied, but directory is
         assertTrue(target.exists())
         assertTrue(targetFile.exists())
         assertTrue(expectedContent.contentEquals(targetFile.readBytes()))

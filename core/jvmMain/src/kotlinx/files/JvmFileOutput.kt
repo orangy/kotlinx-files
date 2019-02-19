@@ -4,9 +4,8 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.*
 import java.nio.channels.*
 
-// TODO: Code for channels copied from kotlinx.io, needs to be extensible there because we need to implement FileInput on it
 class JvmFileOutput(
-    override val path: Path,
+    override val identity: String,
     private val channel: SeekableByteChannel,
     pool: ObjectPool<IoBuffer> = IoBuffer.Pool
 ) : AbstractOutput(pool = pool), FileOutput {

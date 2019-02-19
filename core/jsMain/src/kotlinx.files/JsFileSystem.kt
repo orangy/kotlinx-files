@@ -140,9 +140,10 @@ class JsFileSystem : FileSystem {
 
     override fun openInput(path: Path): JsFileInput {
         checkCompatible(path)
+        val stringPath = path.toString()
         try {
-            val fd = fs.openSync(path.toString(), "r");
-            return JsFileInput(path, fd)
+            val fd = fs.openSync(stringPath, "r");
+            return JsFileInput(stringPath, fd)
         } catch (e: dynamic) {
             throw IOException("Failed to create an input stream for $path: $e")
         }
@@ -154,9 +155,10 @@ class JsFileSystem : FileSystem {
         if (path.isDirectory)
             throw IOException("Cannot create output stream for directory")
 
+        val stringPath = path.toString()
         try {
-            val fd = fs.openSync(path.toString(), "w");
-            return JsFileOutput(path, fd)
+            val fd = fs.openSync(stringPath, "w");
+            return JsFileOutput(stringPath, fd)
         } catch (e: dynamic) {
             throw IOException("Failed to create an output stream for $path: $e")
         }

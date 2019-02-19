@@ -18,7 +18,7 @@ class PosixFileSystem : FileSystem {
 
     override fun exists(path: Path): Boolean {
         checkCompatible(path)
-        return access(path.str(), F_OK) == 0
+        return access(path.toString(), F_OK) == 0
     }
 
     override fun openDirectory(path: Path): PosixDirectory {
@@ -33,7 +33,7 @@ class PosixFileSystem : FileSystem {
 
     private fun readFileType(path: Path): Int = memScoped {
         val stat = alloc<stat>()
-        if (lstat(path.str(), stat.ptr) == -1) {
+        if (lstat(path.toString(), stat.ptr) == -1) {
             val errno = errno
             throw IOException(
                 "Failed to call 'lstat' on file $path with error code $errno",
@@ -47,17 +47,17 @@ class PosixFileSystem : FileSystem {
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
         // 0x1B6 hex == 438 == 0666 oct
-        open(path.str(), O_WRONLY or O_CREAT, 0x1B6)
+        open(path.toString(), O_WRONLY or O_CREAT, 0x1B6)
         return path
     }
 
     override fun createDirectory(path: Path): UnixPath {
         checkCompatible(path)
         // 0x1FF hex == 511 == 0777 oct
-        if (mkdir(path.str(), 0x1FF) == -1) {
+        if (mkdir(path.toString(), 0x1FF) == -1) {
             val errno = errno
             throw IOException(
-                "Failed to create directory ${path.str()} with error code $errno",
+                "Failed to create directory $path with error code $errno",
                 PosixException.forErrno(errno)
             )
         }
@@ -73,7 +73,7 @@ class PosixFileSystem : FileSystem {
         }
 
         when {
-            source.isDirectory -> copyDirectoryRecursive(source, target) 
+            source.isDirectory -> copyDirectoryRecursive(source, target)
             source.isFile -> copyFile(source, target)
             else -> throw IOException("Links are not supported by implementation")
         }
@@ -103,7 +103,7 @@ class PosixFileSystem : FileSystem {
             throw IOException("File $target already exists")
         }
 
-        if (rename(source.str(), target.str()) == -1) {
+        if (rename(source.toString(), target.toString()) == -1) {
             val errno = errno
             throw IOException(
                 "Failed to move $source to $target with error code $errno",
@@ -128,8 +128,8 @@ class PosixFileSystem : FileSystem {
         deleteRecursively(path)
         return true
     }
-    
-    private fun deleteRecursively(path: Path) : Unit = openDirectory(path).use { directory ->
+
+    private fun deleteRecursively(path: Path): Unit = openDirectory(path).use { directory ->
         for (child in directory.children) {
             if (isDirectory(child))
                 deleteRecursively(child)
@@ -145,17 +145,18 @@ class PosixFileSystem : FileSystem {
             return false
 
         val isDirectory = path.isDirectory
+        val stringPath = path.toString()
         val hasError = if (isDirectory) {
-            rmdir(path.str()) == -1
+            rmdir(stringPath) == -1
         } else {
-            unlink(path.str()) == -1
+            unlink(stringPath) == -1
         }
 
         val error = if (hasError) errno else 0
 
         if (error != 0 && error != ENOENT) {
             throw IOException(
-                "Failed to delete ${path.str()} (isDirectory = $isDirectory) with error code $error",
+                "Failed to delete $path (isDirectory = $isDirectory) with error code $error",
                 PosixException.forErrno(error)
             )
         }
@@ -166,40 +167,39 @@ class PosixFileSystem : FileSystem {
     override fun openInput(path: Path): FileInput {
         checkCompatible(path)
 
-        val fd = open(path.str(), O_RDONLY)
+        val stringPath = path.toString()
+        val fd = open(stringPath, O_RDONLY)
         if (fd == -1) {
             val errno = errno
             throw IOException(
-                "Failed to open ${path.str()} for reading with error code $errno",
+                "Failed to open $path for reading with error code $errno",
                 PosixException.forErrno(errno)
             )
         }
 
-        return PosixFileInput(path, fd)
+        return PosixFileInput(stringPath, fd)
     }
 
     override fun openOutput(path: Path): FileOutput {
         checkCompatible(path)
 
-        val fd = open(path.str(), O_CREAT or O_WRONLY or O_TRUNC, 0x1B6) // TODO constant
+        val stringPath = path.toString()
+        val fd = open(stringPath, O_CREAT or O_WRONLY or O_TRUNC, 0x1B6) // TODO constant
         if (fd == -1) {
             val errno = errno
             throw IOException(
-                "Failed to open ${path.str()} for writing with error code $errno",
+                "Failed to open $path for writing with error code $errno",
                 PosixException.forErrno(errno)
             )
         }
 
-        return PosixFileOutput(path, fd)
+        return PosixFileOutput(stringPath, fd)
     }
 
     companion object {
         val Default = PosixFileSystem()
     }
 }
-
-@PublishedApi
-internal fun Path.str(): String = (this as UnixPath).normalizedPath
 
 @PublishedApi
 internal fun timespec.micros(): Long = tv_sec * 1000000L + tv_nsec / 1000L
