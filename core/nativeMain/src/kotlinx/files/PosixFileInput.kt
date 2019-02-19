@@ -10,6 +10,7 @@ private const val SZERO: ssize_t = 0
 
 class PosixFileInput(override val identity: String, private val fileDescriptor: Int) : AbstractInput(), FileInput {
     private var closed = false
+    private var positionValue = 0L
 
     init {
         check(fileDescriptor >= 0) { "Illegal fileDescriptor: $fileDescriptor" }
@@ -17,14 +18,22 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
     }
 
     override val size: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get()  {
+            checkClosed()
+            val attributes = readAttributes(fileDescriptor)
+            return attributes.sizeBytes
+        }
+
     override val position: Long
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() {
+            checkClosed()
+            return positionValue
+        }
 
     override fun seek(position: Long) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        checkClosed()
+        positionValue = position
     }
-
 
     override fun fill(): IoBuffer? {
         val buffer = pool.borrow()
@@ -43,8 +52,14 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
         return buffer
     }
 
+    private fun checkClosed() {
+        if (closed)
+            throw IOException("FileOutput for $identity has already been closed.")
+    }
+
     override fun closeSource() {
-        if (closed) return
+        if (closed) 
+            return
         closed = true
 
         if (close(fileDescriptor) != 0) {

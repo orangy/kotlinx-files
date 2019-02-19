@@ -29,7 +29,6 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
         positionValue = position
     }
 
-
     init {
         check(fileDescriptor >= 0) { "Illegal fileDescriptor: $fileDescriptor" }
         check(kx_internal_is_non_blocking(fileDescriptor) == 0) { "File descriptor is in O_NONBLOCK mode." }
@@ -49,7 +48,8 @@ class PosixFileOutput(override val identity: String, private val fileDescriptor:
     }
 
     override fun closeDestination() {
-        if (closed) return
+        if (closed)
+            return
         closed = true
 
         if (close(fileDescriptor) != 0) {
