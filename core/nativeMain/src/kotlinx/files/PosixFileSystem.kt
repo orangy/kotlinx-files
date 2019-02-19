@@ -14,7 +14,7 @@ class PosixFileSystem : FileSystem {
         if (children.isEmpty()) {
             return UnixPath(this, name)
         }
-        return UnixPath(this, "$name/" + children.joinToString("/"))
+        return UnixPath(this, "$name$pathSeparator${children.joinToString(pathSeparator)}")
     }
 
     override fun exists(path: Path): Boolean {
