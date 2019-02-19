@@ -7,11 +7,7 @@ class UnixPath private constructor(
 ) : Path {
 
     constructor(fileSystem: FileSystem, path: String) : this(fileSystem, path, null)
-
-    companion object {
-        private const val pathSeparator = '/'
-    }
-
+    
     // BUG in K/N: this should be before normalizedPath or it will incorrectly reinit the property as "uninited"
     private lateinit var componentOffsets: IntArray
 
@@ -37,7 +33,7 @@ class UnixPath private constructor(
 
             val end = componentOffsets.last()
             return when (end) {
-                1 -> UnixPath(fileSystem, pathSeparator.toString(), intArrayOf())
+                1 -> UnixPath(fileSystem, fileSystem.pathSeparator, intArrayOf())
                 0 -> null
                 else -> {
                     val offsets = componentOffsets.copyOf(componentOffsets.size - 1)
@@ -56,7 +52,7 @@ class UnixPath private constructor(
             return UnixPath(fileSystem, path, intArrayOf(0))
         }
 
-    override val isAbsolute: Boolean get() = normalizedPath.startsWith(pathSeparator)
+    override val isAbsolute: Boolean get() = normalizedPath.startsWith(fileSystem.pathSeparator)
 
     override val componentCount: Int
         get() = componentOffsets.size
@@ -98,7 +94,7 @@ class UnixPath private constructor(
         // TODO not the most optimal solution
         // TODO: join known offsets from both paths
         // Beware if `other` path is relative starting with uncollapsed ../../.., can't reuse offsets here
-        return UnixPath(fileSystem, "$normalizedPath$pathSeparator${other.normalizedPath}", null)
+        return UnixPath(fileSystem, "$normalizedPath${fileSystem.pathSeparator}${other.normalizedPath}", null)
     }
 
     override fun toString(): String = normalizedPath
@@ -120,10 +116,11 @@ class UnixPath private constructor(
     }
 
     private fun normalize(path: String): String {
-        val index = path.indexOf("//")
+        val separatorChar = fileSystem.pathSeparator.single()
+        val index = path.indexOf("$separatorChar$separatorChar")
         val normalized = when {
             index != -1 -> normalizeImpl(path, path.length, index)
-            path.isEmpty() || path[path.length - 1] != pathSeparator -> path
+            path.isEmpty() || path[path.length - 1] != separatorChar -> path
             else -> normalizeImpl(path, path.length, path.length - 1)
         }
         componentOffsets = calculateOffsets(normalized)
@@ -132,15 +129,16 @@ class UnixPath private constructor(
 
     private fun normalizeImpl(input: String, length: Int, startFrom: Int): String {
         if (length == 0) return input
+        val separatorChar = fileSystem.pathSeparator.single()
 
         // Trim trailing slashes
         var lastIndex = length
-        while ((lastIndex > 0) && (input[lastIndex - 1] == pathSeparator)) {
+        while ((lastIndex > 0) && (input[lastIndex - 1] == separatorChar)) {
             lastIndex--
         }
 
         if (lastIndex == 0) {
-            return pathSeparator.toString()
+            return fileSystem.pathSeparator
         }
 
         val sb = StringBuilder(input.length + (input.length - lastIndex))
@@ -152,7 +150,7 @@ class UnixPath private constructor(
         var previousChar: Char = 0.toChar()
         for (i in startFrom until lastIndex) {
             val c = input[i]
-            if (c == pathSeparator && previousChar == pathSeparator) {
+            if (c == separatorChar && previousChar == separatorChar) {
                 continue
             }
 
@@ -164,6 +162,7 @@ class UnixPath private constructor(
     }
 
     private fun calculateOffsets(path: String): IntArray {
+        val separatorChar = fileSystem.pathSeparator.single()
         val result = IntArray(countNameParts(path))
         var count = 0
         var index = 0
@@ -171,11 +170,11 @@ class UnixPath private constructor(
         val length = path.length
         while (index < length) {
             val c = path[index]
-            if (c == pathSeparator) {
+            if (c == separatorChar) {
                 index++
             } else {
                 result[count++] = index++
-                while (index < length && path[index] != pathSeparator) {
+                while (index < length && path[index] != separatorChar) {
                     index++
                 }
             }
@@ -189,14 +188,15 @@ class UnixPath private constructor(
             return 1
         }
 
+        val separatorChar = fileSystem.pathSeparator.single()
         var currentIndex = 0
         var result = 0
 
         while (currentIndex < path.length) {
-            if (path[currentIndex++] != pathSeparator) {
+            if (path[currentIndex++] != separatorChar) {
                 ++result
 
-                while (currentIndex < path.length && path[currentIndex] != pathSeparator) {
+                while (currentIndex < path.length && path[currentIndex] != separatorChar) {
                     ++currentIndex
                 }
             }
