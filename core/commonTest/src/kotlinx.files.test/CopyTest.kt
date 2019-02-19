@@ -45,7 +45,7 @@ class CopyTest : TestBase() {
         assertFalse(target.exists())
         assertFalse(targetFile.exists())
 
-        directory.copyTo(target)
+        directory.fileSystem.copyDirectoryRecursively(directory, target)
 
         // Content is not copied, but directory is
         assertTrue(target.exists())

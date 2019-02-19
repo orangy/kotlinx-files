@@ -28,21 +28,8 @@ class PosixFileSystem : FileSystem {
 
     override val isReadOnly: Boolean get() = false
 
-    override fun isDirectory(path: Path): Boolean = exists(path) && readFileType(path) == S_IFDIR
-    override fun isFile(path: Path): Boolean = exists(path) && readFileType(path) == S_IFREG
-
-    private fun readFileType(path: Path): Int = memScoped {
-        val stat = alloc<stat>()
-        if (compat_lstat(path.toString(), stat.ptr) == -1) {
-            val errno = errno
-            throw IOException(
-                "Failed to call 'lstat' on file $path with error code $errno",
-                PosixException.forErrno(errno)
-            )
-        }
-        return stat.st_mode.toInt() and S_IFMT
-    }
-
+    override fun isDirectory(path: Path): Boolean = exists(path) && path.stat().isDirectory
+    override fun isFile(path: Path): Boolean = exists(path) && path.stat().isFile
 
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
@@ -72,28 +59,17 @@ class PosixFileSystem : FileSystem {
         }
 
         when {
-            source.isDirectory -> copyDirectoryRecursive(source, target)
+            source.isDirectory -> {
+                // TODO: Copy permissions & ownership
+                createDirectory(target)
+            }
             source.isFile -> copyFile(source, target)
             else -> throw IOException("Links are not supported by implementation")
         }
 
         return target
     }
-
-    private fun copyDirectoryRecursive(source: Path, target: Path): Unit = openDirectory(source).use { directory ->
-        if (!exists(target)) {
-            createDirectory(target)
-        }
-
-        for (sourceChild in directory.children) {
-            val targetChild = UnixPath(this, "$target/${sourceChild.name}")
-            if (sourceChild.isDirectory)
-                copyDirectoryRecursive(sourceChild, targetChild)
-            else
-                copy(sourceChild, targetChild)
-        }
-    }
-
+    
     override fun move(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
@@ -119,23 +95,6 @@ class PosixFileSystem : FileSystem {
                 input.copyTo(output)
             }
         }
-    }
-
-    override fun deleteDirectory(path: Path): Boolean {
-        if (!exists(path))
-            return false
-        deleteRecursively(path)
-        return true
-    }
-
-    private fun deleteRecursively(path: Path): Unit = openDirectory(path).use { directory ->
-        for (child in directory.children) {
-            if (isDirectory(child))
-                deleteRecursively(child)
-            else
-                delete(child)
-        }
-        delete(path)
     }
 
     override fun delete(path: Path): Boolean {

@@ -12,25 +12,7 @@ class JsFileSystem : FileSystem {
     }
 
     override val isReadOnly: Boolean get() = false
-
-    override fun deleteDirectory(path: Path): Boolean {
-        checkCompatible(path)
-        if (!exists(path))
-            return false
-        deleteRecursively(path)
-        return true
-    }
-
-    private fun deleteRecursively(path: UnixPath): Unit = openDirectory(path).use { directory ->
-        for (child in directory.children) {
-            if (isDirectory(child))
-                deleteRecursively(child)
-            else
-                delete(child)
-        }
-        delete(path)
-    }
-
+    
     override fun isDirectory(path: Path): Boolean {
         checkCompatible(path)
         if (!exists(path))
@@ -80,7 +62,8 @@ class JsFileSystem : FileSystem {
         checkCompatible(source)
         checkCompatible(target)
         if (isDirectory(source)) {
-            copyDirectoryRecursive(source, target)
+            // TODO: Copy permissions & ownership
+            createDirectory(target)
         } else {
             try {
                 // COPYFILE_EXCL to fail if target exists
@@ -92,21 +75,7 @@ class JsFileSystem : FileSystem {
 
         return target
     }
-
-    private fun copyDirectoryRecursive(source: Path, target: Path): Unit = openDirectory(source).use { directory ->
-        if (!exists(target)) {
-            createDirectory(target)
-        }
-
-        for (sourceChild in directory.children) {
-            val targetChild = UnixPath(this, "$target/${sourceChild.name}")
-            if (sourceChild.isDirectory)
-                copyDirectoryRecursive(sourceChild, targetChild)
-            else
-                copy(sourceChild, targetChild)
-        }
-    }
-
+    
     override fun move(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)

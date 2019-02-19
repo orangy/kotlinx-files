@@ -12,7 +12,7 @@ open class TestBase {
 
     @AfterTest
     fun tearDown() {
-        testFolder.deleteDirectoryIfExists()
+        FileSystems.Default.deleteDirectoryRecursively(testFolderPath)
     }
 
     fun testFile(path: String): Path = Path(testFolder.toString(), "$path.txt")

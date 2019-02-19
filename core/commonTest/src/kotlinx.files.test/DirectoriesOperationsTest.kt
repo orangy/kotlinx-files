@@ -25,7 +25,7 @@ class DirectoriesOperationsTest : TestBase() {
     fun testDelete() {
         val path = testDirectory("delete").createDirectory()
         assertTrue(path.exists())
-        path.deleteDirectory()
+        path.delete()
         assertFalse(path.isDirectory)
         assertFalse(path.exists())
     }

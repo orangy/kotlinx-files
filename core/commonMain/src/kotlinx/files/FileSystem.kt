@@ -13,14 +13,12 @@ interface FileSystem {
     fun openOutput(path: Path): FileOutput
 
     fun createFile(path: Path): Path
-    fun delete(path: Path): Boolean
-
     fun createDirectory(path: Path): Path
-    fun deleteDirectory(path: Path): Boolean
-    
+
     fun move(source: Path, target: Path): Path
     fun copy(source: Path, target: Path): Path
-    
+    fun delete(path: Path): Boolean
+
     fun isDirectory(path: Path): Boolean
     fun isFile(path: Path): Boolean
 }
