@@ -1,16 +1,19 @@
 package kotlinx.files
 
 import java.nio.file.*
-import java.util.stream.*
 
 class JvmDirectory(private val fileSystem: JvmFileSystem, override val path: JvmPath) : Directory {
+    private val stream = Files.newDirectoryStream(path.platformPath)
+
     override val children = object : Iterable<JvmPath> {
-        override fun iterator(): Iterator<JvmPath> {
-            val children = Files.list(path.platformPath).collect(Collectors.toList())
-            val paths = children.map { JvmPath(fileSystem, it) }
-            return paths.iterator()
+        override fun iterator(): Iterator<JvmPath> = object : Iterator<JvmPath> {
+            private val directoryIterator = stream.iterator()
+            override fun hasNext(): Boolean = directoryIterator.hasNext()
+            override fun next(): JvmPath = JvmPath(fileSystem, directoryIterator.next())
         }
     }
 
-    override fun close() {}
+    override fun close() {
+        stream.close()
+    }
 }

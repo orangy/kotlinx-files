@@ -103,6 +103,7 @@ class JsFileSystem : FileSystem {
             }
             true
         } catch (e: Throwable) {
+            // TODO: properly handle exceptions 
             false
         }
     }
