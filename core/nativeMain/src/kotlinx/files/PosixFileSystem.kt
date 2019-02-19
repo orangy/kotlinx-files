@@ -83,8 +83,8 @@ class PosixFileSystem : FileSystem {
     }
 
     private fun copyFile(source: Path, target: Path) {
-        openOutput(target).use { output ->
-            openInput(source).use { input ->
+        openInput(source).use { input ->
+            openOutput(target).use { output ->
                 input.copyTo(output)
             }
         }
@@ -109,7 +109,7 @@ class PosixFileSystem : FileSystem {
             // TODO: directory not empty, what to do?
             return false
         }
-        
+
         if (error != 0 && error != ENOENT) {
             throw IOException("Failed to delete $path (isDirectory = $isDirectory)", PosixException.forErrno(error))
         }
