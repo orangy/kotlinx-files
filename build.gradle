@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url "https://plugins.gradle.org/m2/" }
+        gradlePluginPortal()
         maven { url "https://dl.bintray.com/orangy/maven" }
     }
 
@@ -30,8 +30,8 @@ infra {
     node {
         version = '10.15.1'
         mocha('4.1.0')
-        install("source-map-support", source_map_support_version)
-        install("mocha-teamcity-reporter", mocha_teamcity_reporter_version)
+        install("source-map-support", "0.5.3")
+        install("mocha-teamcity-reporter", "2.2.2")
     }
 }
 
