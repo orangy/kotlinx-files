@@ -1,13 +1,7 @@
 import org.jetbrains.kotlin.konan.target.HostManager
-
-plugins {
-    id 'maven-publish'
-}
-
 project.ext.hostManager = new HostManager()
 
 apply plugin: 'kotlin-multiplatform'
-
 apply from: rootProject.file("gradle/utility.gradle")
 
 kotlin {
@@ -113,45 +107,3 @@ kotlin {
         }
     }
 }
-
-publishing {
-    repositories {
-        maven {
-            name = 'build'
-            url = "$rootProject.buildDir/maven"
-        }
-        maven {
-            name = 'bintray'
-            def bintrayOrg = project.bintrayOrg
-            def bintrayRepository = project.bintrayRepository
-            def bintrayPackage = project.bintrayPackage
-            url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
-            credentials {
-                username = project.bintrayUser
-                password = project.bintrayApiKey
-            }
-        }
-    }
-}
-
-afterEvaluate {
-    clean {
-        publishing.repositories.all { repository ->
-            if (repository.name == 'build') {
-                delete += repository.url
-            }
-        }
-    }
-
-    task('publishToBuildRepository') { publish ->
-        group = 'publishing'
-        tasks.withType(PublishToMavenRepository) { task ->
-            if (task.repository.name == 'build') {
-                publish.dependsOn(task)
-            }
-        }
-    }
-}
-
-apply from: rootProject.file('gradle/node-js.gradle')
-apply from: rootProject.file('gradle/test-mocha-js.gradle')
