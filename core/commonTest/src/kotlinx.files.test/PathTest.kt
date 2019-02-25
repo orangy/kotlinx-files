@@ -49,10 +49,10 @@ class PathTest {
         // Where is my parametrized :(
 
         checkConcatenation(path("a"), "b", "a${sep}b")
-        checkConcatenation(path("a"), "/b/", "a${sep}b")
-        checkConcatenation(path("foo/../.."), "../../", "foo$sep..$sep..$sep..$sep..")
-        checkConcatenation(path(""), "/", sep)
-        checkConcatenation(path("/"), "", sep)
+        checkConcatenation(path("a"), "${sep}b${sep}", "a${sep}b")
+        checkConcatenation(path("foo${sep}..${sep}.."), "..${sep}..${sep}", "foo$sep..$sep..$sep..$sep..")
+        checkConcatenation(path(""), "${sep}", sep)
+        checkConcatenation(path("${sep}"), "", sep)
         checkConcatenation(path("."), "bar", ".${sep}bar")
         checkConcatenation(path("bar"), ".", "bar$sep.")
         checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${sep}foo.txt")
@@ -77,25 +77,25 @@ class PathTest {
 
     @Test
     fun testRelativePathSlashes() {
-        checkSlashes("foo/bar//test///file.txt")
-        checkSlashes("foo/bar//test///file.txt/")
-        checkSlashes("foo/bar//test/file.txt//")
+        checkSlashes("foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt")
+        checkSlashes("foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}")
+        checkSlashes("foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}")
     }
 
     @Test
     fun testAbsoluteRelativePathSlashes() {
-        checkSlashes("/foo/bar//test///file.txt", "/")
-        checkSlashes("/foo/bar//test///file.txt/", "/")
-        checkSlashes("/foo/bar//test/file.txt//", "/")
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt", "${sep}")
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}", "${sep}")
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}", "${sep}")
     }
 
     private fun checkSlashes(forwardSlashPath: String, prefix: String = "") {
-        val path = path(forwardSlashPath.replace("/", sep))
+        val path = path(forwardSlashPath.replace("${sep}", sep))
     
         assertEquals("file.txt", path.name.toString())
         assertEquals(4, path.componentCount)
-        assertEquals(prefix + "foo/bar/test/file.txt", path.toString())
-        assertEquals(prefix + "foo/bar/test", path.parent!!.toString())
+        assertEquals(prefix + "foo${sep}bar${sep}test${sep}file.txt", path.toString())
+        assertEquals(prefix + "foo${sep}bar${sep}test", path.parent!!.toString())
 
         assertEquals("foo", path.component(0).toString())
         assertEquals("bar", path.component(1).toString())
@@ -106,11 +106,11 @@ class PathTest {
 
     @Test
     fun testDenormalizedPath() {
-        val path = path("1/2/3/../3/../../2//1.txt")
+        val path = path("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}${sep}1.txt")
         assertEquals("1.txt", path.name.toString())
         assertEquals(9, path.componentCount)
-        assertEquals("1/2/3/../3/../../2/1.txt", path.toString())
-        assertEquals("1/2/3/../3/../../2", path.parent!!.toString())
+        assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}1.txt", path.toString())
+        assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2", path.parent!!.toString())
 
         assertEquals("1", path.component(0).toString())
         assertEquals("2", path.component(1).toString())
