@@ -46,6 +46,6 @@ class DirectoriesOperationsTest : TestBase() {
 
     @Test
     fun testMkdirs() {
-        assertFailsWith<IOException> { testDirectory("mkdirs/mkdirs2/mkdirs3").createDirectory() }
+        assertFailsWith<IOException> { testDirectory("mkdirs${separator}mkdirs2${separator}mkdirs3").createDirectory() }
     }
 }

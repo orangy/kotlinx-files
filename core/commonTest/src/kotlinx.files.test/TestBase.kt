@@ -4,8 +4,8 @@ import kotlinx.files.*
 import kotlin.test.*
 
 open class TestBase {
-    protected val slash = FileSystems.Default.pathSeparator
-    private val testFolderPath = Path("build${slash}testFolder")
+    protected val separator = FileSystems.Default.pathSeparator
+    private val testFolderPath = Path("build${separator}testFolder")
     private val testFolder: Path = testFolderPath.also {
         if (!it.exists())
             FileSystems.Default.createDirectory(testFolderPath)
