@@ -54,7 +54,7 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
 
     private fun checkClosed() {
         if (closed)
-            throw IOException("FileOutput for $identity has already been closed.")
+            throw IOException("FileInput for $identity has already been closed.")
     }
 
     override fun closeSource() {
