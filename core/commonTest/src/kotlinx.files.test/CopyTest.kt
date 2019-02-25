@@ -4,7 +4,6 @@ import kotlinx.files.*
 import kotlinx.io.errors.*
 import kotlin.test.*
 
-@Ignore
 class CopyTest : TestBase() {
 
     @Test

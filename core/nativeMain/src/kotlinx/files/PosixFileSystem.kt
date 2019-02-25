@@ -35,7 +35,11 @@ class PosixFileSystem : FileSystem {
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
         // 0x1B6 hex == 438 == 0666 oct
-        open(path.toString(), O_WRONLY or O_CREAT, 0x1B6)
+        val fd = open(path.toString(), O_WRONLY or O_CREAT, 0x1B6)
+        if (fd == -1) {
+            throw IOException("Failed to create $path", PosixException.forErrno())
+        }
+        close(fd)
         return path
     }
 
