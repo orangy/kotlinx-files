@@ -9,7 +9,7 @@ class JsDirectory(private val fileSystem: JsFileSystem, override val path: UnixP
                 val children = JsFileSystem.fs.readdirSync(path.toString()) as Array<String>
                 val paths = children
                     .filter { it != "." && it != ".." }
-                    .map { UnixPath(fileSystem, "$path/$it") }
+                    .map { UnixPath(fileSystem, "$path${fileSystem.pathSeparator}$it") }
                 return paths.iterator()
             } catch (e: dynamic) {
                 throw IOException("Failed to read contents of directory $path: $e")

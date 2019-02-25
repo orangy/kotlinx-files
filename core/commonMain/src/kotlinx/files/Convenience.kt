@@ -62,9 +62,9 @@ fun FileSystem.copyDirectoryRecursively(source: Path, target: Path): Unit =
         }
 
         for (sourceChild in directory.children) {
-            val directoryName = sourceChild.name?.toString()
-            if (directoryName != null) {
-                val targetChild = path(target, directoryName)
+            val childName = sourceChild.name?.toString()
+            if (childName != null) {
+                val targetChild = path(target, childName)
                 if (sourceChild.isDirectory)
                     copyDirectoryRecursively(sourceChild, targetChild)
                 else

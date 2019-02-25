@@ -31,7 +31,7 @@ class PosixDirectory(private val fileSystem: PosixFileSystem, override val path:
                 if (dirStruct == null)
                     throw NoSuchElementException("There are no more children in directory $path")
                 val name = dirStruct!!.pointed.d_name.toKString()
-                return UnixPath(fileSystem, "$path/$name").also {
+                return UnixPath(fileSystem, "$path${fileSystem.pathSeparator}$name").also {
                     dirStruct = nextStruct()
                 }
             }

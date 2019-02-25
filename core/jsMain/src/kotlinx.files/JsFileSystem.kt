@@ -19,7 +19,7 @@ class JsFileSystem : FileSystem {
         checkCompatible(path)
         if (!exists(path))
             return false
-        val attributes = fs.lstatSync(path.str())
+        val attributes = fs.lstatSync(path.toString())
         return attributes.isDirectory() as Boolean
     }
 
@@ -27,7 +27,7 @@ class JsFileSystem : FileSystem {
         checkCompatible(path)
         if (!exists(path))
             return false
-        val attributes = fs.lstatSync(path.str())
+        val attributes = fs.lstatSync(path.toString())
         return attributes.isFile() as Boolean
     }
 
@@ -40,12 +40,12 @@ class JsFileSystem : FileSystem {
 
     override fun exists(path: Path): Boolean {
         checkCompatible(path)
-        return fs.existsSync(path.str()) as Boolean
+        return fs.existsSync(path.toString()) as Boolean
     }
 
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
-        val fd = fs.openSync(path.str(), "w")
+        val fd = fs.openSync(path.toString(), "w")
         fs.closeSync(fd)
         return path
     }
@@ -53,7 +53,7 @@ class JsFileSystem : FileSystem {
     override fun createDirectory(path: Path): UnixPath {
         checkCompatible(path)
         try {
-            fs.mkdirSync(path.str())
+            fs.mkdirSync(path.toString())
         } catch (e: dynamic) {
             throw IOException("Failed to create directory: $e")
         }
@@ -69,7 +69,7 @@ class JsFileSystem : FileSystem {
         } else {
             try {
                 // COPYFILE_EXCL to fail if target exists
-                fs.copyFileSync(source.str(), target.str(), fs.constants.COPYFILE_EXCL)
+                fs.copyFileSync(source.toString(), target.toString(), fs.constants.COPYFILE_EXCL)
             } catch (e: dynamic) {
                 throw IOException("Failed to copy $source to $target: $e")
             }
@@ -87,7 +87,7 @@ class JsFileSystem : FileSystem {
 
         try {
             // COPYFILE_EXCL to fail if target exists
-            fs.renameSync(source.str(), target.str())
+            fs.renameSync(source.toString(), target.toString())
         } catch (e: dynamic) {
             throw IOException("Failed to move $source to $target: $e")
         }
@@ -99,9 +99,9 @@ class JsFileSystem : FileSystem {
         checkCompatible(path)
         return try {
             if (path.isDirectory) {
-                fs.rmdirSync(path.str())
+                fs.rmdirSync(path.toString())
             } else {
-                fs.unlinkSync(path.str())
+                fs.unlinkSync(path.toString())
             }
             true
         } catch (e: Throwable) {
@@ -143,8 +143,6 @@ class JsFileSystem : FileSystem {
         internal val path: dynamic = require("path")
     }
 }
-
-private fun Path.str(): String = toString()
 
 private external fun require(module: String): dynamic
 
