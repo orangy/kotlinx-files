@@ -71,19 +71,7 @@ fun Project.buildAll() = BuildType {
     id("Build_All")
     this.name = "Build (All)"
     type = BuildTypeSettings.Type.COMPOSITE
-
-    steps {
-        gradle {
-            name = "Configure Version"
-            jdkHome = "%env.JDK_18_x64%"
-            jvmArgs = "-Xmx1g"
-            tasks = "project"
-            gradleParams = "-P$versionSuffixParameter=SNAPSHOT -P$teamcitySuffixParameter=%build.counter%"
-            buildFile = ""
-            gradleWrapperPath = ""
-        }
-    }
-
+    
     triggers {
         vcs {
             triggerRules = """
