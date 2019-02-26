@@ -106,7 +106,7 @@ fun BuildType.dependsOnSnapshot(build: BuildType, configure: SnapshotDependency.
     dependencies.dependency(build) {
         snapshot {
             configure()
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.FAIL_TO_START
             onDependencyCancel = FailureAction.CANCEL
         }
     }
