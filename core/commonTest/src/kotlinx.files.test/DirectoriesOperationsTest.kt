@@ -9,39 +9,22 @@ class DirectoriesOperationsTest : TestBase() {
     @Test
     fun testCreateDirectory() {
         val path = testDirectory("create-directory")
-        assertFalse(path.exists())
+        assertFalse(path.exists(), "Directory shouldn't exist")
+        assertFalse(path.isDirectory, "isDirectory should be false")
+        assertFalse(path.isFile, "isFile should be false")
         path.createDirectory()
-        assertTrue(path.exists())
+        assertTrue(path.exists(), "Directory should be created")
+        assertTrue(path.isDirectory, "isDirectory should be true")
+        assertFalse(path.isFile, "isFile should be false")
     }
-
-    @Test
-    fun testIsDirectory() {
-        val path = testDirectory("is-directory").createDirectory()
-        assertTrue(path.exists())
-        assertTrue(path.isDirectory)
-    }
-
+    
     @Test
     fun testDelete() {
         val path = testDirectory("delete").createDirectory()
-        assertTrue(path.exists())
+        assertTrue(path.exists(), "Directory should exist")
         path.delete()
-        assertFalse(path.isDirectory)
-        assertFalse(path.exists())
-    }
-
-    @Test
-    fun testIsDirectoryMissing() {
-        val path = testDirectory("is-directory-missing")
-        assertFalse(path.exists())
-        assertFalse(path.isDirectory)
-    }
-
-    @Test
-    fun testIsFile() {
-        val path = testDirectory("is-file").createDirectory()
-        assertTrue(path.exists())
-        assertFalse(path.isFile)
+        assertFalse(path.isDirectory, "isDirectory should be false after delete")
+        assertFalse(path.exists(), "Directory shouldn't exist")
     }
 
     @Test

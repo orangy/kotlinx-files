@@ -17,20 +17,20 @@ class CopyTest : TestBase() {
 
         val sourceBytes = sourceFile.readBytes()
         val targetBytes = targetFile.readBytes()
-        assertTrue(expectedContent.contentEquals(sourceBytes), "Source content mismatch: ${expectedContent.contentToString()}\n${sourceBytes.contentToString()}")
-        assertTrue(expectedContent.contentEquals(targetBytes), "Target content mismatch: ${expectedContent.contentToString()}\n${targetBytes.contentToString()}")
-        assertTrue(sourceFile.exists())
+        assertEquals(expectedContent.contentToString(), sourceBytes.contentToString())
+        assertEquals(expectedContent.contentToString(), targetBytes.contentToString())
+        assertTrue(sourceFile.exists(), "Source file should exist after copy")
     }
 
     @Test
     fun testCopyDirectory() {
-        val directory = testDirectory("copy-directory").createDirectory()
+        val source = testDirectory("copy-directory").createDirectory()
         val target = testDirectory("target-directory")
         assertFalse(target.exists())
 
-        directory.copyTo(target)
-        assertTrue(directory.exists())
-        assertTrue(target.exists())
+        source.copyTo(target)
+        assertTrue(source.exists(), "Source directory should exist after copy")
+        assertTrue(target.exists(), "Target directory should exist after copy")
     }
 
     @Test
@@ -42,14 +42,13 @@ class CopyTest : TestBase() {
 
         val target = testDirectory("target-directory")
         val targetFile = Path(target, "content.txt")
-        assertFalse(target.exists())
-        assertFalse(targetFile.exists())
+        assertFalse(target.exists(), "Target directory should not exist before copy")
+        assertFalse(targetFile.exists(), "Target file should not exist before copy")
 
         directory.fileSystem.copyDirectoryRecursively(directory, target)
 
-        // Content is not copied, but directory is
-        assertTrue(target.exists())
-        assertTrue(targetFile.exists())
+        assertTrue(target.exists(), "Target directory should exist after copy")
+        assertTrue(targetFile.exists(), "Target file should exist after copy")
     }
 
     @Test

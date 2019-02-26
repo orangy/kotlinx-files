@@ -7,54 +7,30 @@ import kotlin.test.*
 class FileOperationsTest : TestBase() {
 
     @Test
-    fun testExists() {
-        val path = testFile("exists")
-        assertFalse(path.exists())
-    }
-
-    @Test
     fun testCreateFile() {
         val path = testFile("create-file")
-        assertFalse(path.exists())
+        assertFalse(path.exists(), "File shouldn't exist")
+        assertFalse(path.isFile,  "isFile should be false")
+        assertFalse(path.isDirectory,  "isDirectory should be false")
         path.createFile()
-        assertTrue(path.exists())
-        assertTrue(path.isFile)
+        assertTrue(path.exists(), "File should be created")
+        assertTrue(path.isFile,  "isFile should be true")
+        assertFalse(path.isDirectory,  "isDirectory should be false")
     }
 
     @Test
     fun testDeleteFile() {
-        val path = testFile("delete-file")
-        val file = path.createFile()
-        assertTrue(path.exists())
-
-        assertTrue(file.deleteFileIfExists())
-        assertFalse(path.exists())
+        val path = testFile("delete-file").createFile()
+        assertTrue(path.exists(), "File should exist")
+        assertTrue(path.deleteFileIfExists(), "File should be deleted")
+        assertFalse(path.exists(), "File shouldn't exist")
     }
 
     @Test
     fun testDeleteMissingFile() {
-        assertFailsWith<IOException> {
-            val path = testFile("non-missing")
-            assertTrue(!path.deleteFileIfExists())
-            path.delete()
-        }
-    }
-
-    @Test
-    fun testIsDirectory() {
-        val path = testFile("is-directory").createFile()
-        assertFalse(path.isDirectory)
-    }
-
-    @Test
-    fun testIsRegularFile() {
-        val path = testFile("is-regular-file").createFile()
-        assertTrue(path.isFile)
-    }
-
-    @Test
-    fun testIsRegularFileNonExistent() {
-        val path = testFile("is-regular-file-non-existent")
-        assertFalse(path.isFile)
+        val path = testFile("non-missing")
+        assertFalse(path.exists(), "File shouldn't exist")
+        assertFalse(path.deleteFileIfExists(), "Shouldn't delete non-existing file")
+        assertFailsWith<IOException>("Can't delete non-existing file") { path.delete() }
     }
 }
