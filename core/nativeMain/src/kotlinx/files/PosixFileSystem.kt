@@ -125,7 +125,7 @@ class PosixFileSystem : FileSystem {
         checkCompatible(path)
 
         val stringPath = path.toString()
-        val fd = open(stringPath, O_RDONLY)
+        val fd = open(stringPath, O_RDONLY or O_BINARY)
         if (fd == -1) {
             throw IOException("Failed to open $path for reading.", PosixException.forErrno())
         }
@@ -137,7 +137,7 @@ class PosixFileSystem : FileSystem {
         checkCompatible(path)
 
         val stringPath = path.toString()
-        val fd = open(stringPath, O_CREAT or O_WRONLY or O_TRUNC, 0x1B6) // TODO constant
+        val fd = open(stringPath, O_CREAT or O_WRONLY or O_TRUNC or O_BINARY, 0x1B6) // TODO constant
         if (fd == -1) {
             throw IOException("Failed to open $path for writing.", PosixException.forErrno())
         }
