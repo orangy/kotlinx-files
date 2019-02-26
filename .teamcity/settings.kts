@@ -91,7 +91,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             jvmArgs = "-Xmx1g"
             tasks = "clean publishToBuildLocal check"
             // --continue is needed to run tests for all targets even if one target fails
-            gradleParams = "-P$versionSuffixParameter=SNAPSHOT --continue"
+            gradleParams = "-P$versionSuffixParameter=build-%build.counter% --continue"
             buildFile = ""
             gradleWrapperPath = ""
         }
