@@ -26,6 +26,7 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2018.2"
 val versionSuffixParameter = "versionSuffix"
+val teamcitySuffixParameter = "teamcitySuffix"
 val releaseVersionParameter = "releaseVersion"
 
 val bintrayUserName = "orangy"
@@ -71,6 +72,18 @@ fun Project.buildAll() = BuildType {
     this.name = "Build (All)"
     type = BuildTypeSettings.Type.COMPOSITE
 
+    steps {
+        gradle {
+            name = "Configure Version"
+            jdkHome = "%env.JDK_18_x64%"
+            jvmArgs = "-Xmx1g"
+            tasks = "project"
+            gradleParams = "-P$versionSuffixParameter=SNAPSHOT -P$teamcitySuffixParameter=%build.counter%"
+            buildFile = ""
+            gradleWrapperPath = ""
+        }
+    }
+
     triggers {
         vcs {
             triggerRules = """
@@ -91,7 +104,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             jvmArgs = "-Xmx1g"
             tasks = "clean publishToBuildLocal check"
             // --continue is needed to run tests for all targets even if one target fails
-            gradleParams = "-P$versionSuffixParameter=build-%build.counter% --continue"
+            gradleParams = "-P$versionSuffixParameter=SNAPSHOT -P$teamcitySuffixParameter=%build.counter% --continue"
             buildFile = ""
             gradleWrapperPath = ""
         }
