@@ -1,29 +1,22 @@
 apply plugin: 'kotlin-multiplatform'
 
-def ideaActive = System.getProperty('idea.active') == 'true'
-
 kotlin {
-    if (ideaActive) {
-        macosX64('native') {
+    infra {
+        target('macosX64') {
             binaries {
-                executable {
-                    entryPoint = 'kotlinx.files.examples.main'
-                }
+                executable { entryPoint = 'kotlinx.files.examples.main' }
             }
         }
-    } else {
-        macosX64('macos64') {
+
+        target('linuxX64') {
             binaries {
-                executable {
-                    entryPoint = 'kotlinx.files.examples.main'
-                }
+                executable { entryPoint = 'kotlinx.files.examples.main' }
             }
         }
-        linuxX64('linux64') {
+
+        target('mingwX64') {
             binaries {
-                executable {
-                    entryPoint = 'kotlinx.files.examples.main'
-                }
+                executable { entryPoint = 'kotlinx.files.examples.main' }
             }
         }
     }
@@ -96,20 +89,6 @@ kotlin {
 
         nativeMain.dependencies {
             api "org.jetbrains.kotlinx:kotlinx-io-native:$kotlinx_io_version"
-        }
-
-        if (!ideaActive) {
-            nativeMain {}
-
-            nativeTest {}
-
-            configure([linux64Main, macos64Main]) {
-                dependsOn nativeMain
-            }
-
-            configure([linux64Test, macos64Test]) {
-                dependsOn nativeTest
-            }
         }
     }
 
