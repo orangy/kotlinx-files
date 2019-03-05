@@ -25,7 +25,7 @@ class DeleteTest : TestBase() {
 
         assertFailsWith<IOException>("Can't delete non-empty directory") { directory.delete() }
 
-        assertFalse(directory.deleteDirectoryIfExists(), "Shouldn't delete non-empty directory")
+        assertFalse(directory.deleteIfExists(), "Shouldn't delete non-empty directory")
         assertTrue(directory.exists(), "Directory should still exist")
         assertTrue(file.exists(), "File should still exist")
 
@@ -38,7 +38,7 @@ class DeleteTest : TestBase() {
     fun deleteNonExisting() {
         val file = testFile("non-existing")
         assertFalse(file.exists(), "File shouldn't exist")
-        assertFalse(file.deleteFileIfExists(), "Non-existing file can't be deleted")
+        assertFalse(file.deleteIfExists(), "Non-existing file can't be deleted")
         assertFailsWith<IOException>("Can't delete non-existing file") { file.delete() }
     }
 }

@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import kotlinx.io.errors.*
 import platform.posix.*
 
-class PosixDirectory(private val fileSystem: PosixFileSystem, override val path: UnixPath) :
+class PosixDirectory(private val fileSystem: PosixFileSystem, private val path: UnixPath) :
     Directory {
     val dirPtr = opendir(path.toString())
         ?: throw IOException("Failed to open directory $path.", PosixException.forErrno())

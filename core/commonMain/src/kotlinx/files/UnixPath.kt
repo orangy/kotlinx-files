@@ -1,5 +1,8 @@
 package kotlinx.files
 
+/**
+ * System-independent Unix-like implementation of [Path]
+ */
 class UnixPath private constructor(
     override val fileSystem: FileSystem,
     path: String,

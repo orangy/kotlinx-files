@@ -2,7 +2,7 @@ package kotlinx.files
 
 import kotlinx.io.errors.*
 
-class JsDirectory(private val fileSystem: JsFileSystem, override val path: UnixPath) : Directory {
+class JsDirectory(private val fileSystem: JsFileSystem, private val path: UnixPath) : Directory {
     override val children = object : Iterable<UnixPath> {
         override fun iterator(): Iterator<UnixPath> {
             try {

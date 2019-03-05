@@ -2,7 +2,7 @@ package kotlinx.files
 
 import java.nio.file.*
 
-class JvmDirectory(private val fileSystem: JvmFileSystem, override val path: JvmPath) : Directory {
+class JvmDirectory(private val fileSystem: JvmFileSystem, path: JvmPath) : Directory {
     private val stream = Files.newDirectoryStream(path.platformPath)
 
     override val children = object : Iterable<JvmPath> {

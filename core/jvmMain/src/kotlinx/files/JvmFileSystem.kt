@@ -56,8 +56,8 @@ class JvmFileSystem(internal val platformFileSystem: JavaFileSystem) : FileSyste
         return target
     }
 
-    override fun path(name: String, vararg children: String): Path {
-        return JvmPath(this, platformFileSystem.getPath(name, *children))
+    override fun path(base: String, vararg children: String): Path {
+        return JvmPath(this, platformFileSystem.getPath(base, *children))
     }
 
     override fun exists(path: Path): Boolean {

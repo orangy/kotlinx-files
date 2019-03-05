@@ -22,7 +22,7 @@ class FileOperationsTest : TestBase() {
     fun testDeleteFile() {
         val path = testFile("delete-file").createFile()
         assertTrue(path.exists(), "File should exist")
-        assertTrue(path.deleteFileIfExists(), "File should be deleted")
+        assertTrue(path.deleteIfExists(), "File should be deleted")
         assertFalse(path.exists(), "File shouldn't exist")
     }
 
@@ -30,7 +30,7 @@ class FileOperationsTest : TestBase() {
     fun testDeleteMissingFile() {
         val path = testFile("non-missing")
         assertFalse(path.exists(), "File shouldn't exist")
-        assertFalse(path.deleteFileIfExists(), "Shouldn't delete non-existing file")
+        assertFalse(path.deleteIfExists(), "Shouldn't delete non-existing file")
         assertFailsWith<IOException>("Can't delete non-existing file") { path.delete() }
     }
 }

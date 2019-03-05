@@ -1,5 +1,5 @@
 package kotlinx.files
 
-actual fun createDefaultPlatformFileSystem(): FileSystem {
+actual fun createPlatformFileSystem(): FileSystem {
     return JvmFileSystem.Default
 }
