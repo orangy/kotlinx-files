@@ -51,8 +51,8 @@ class PathTest {
         checkConcatenation(path("a"), "b", "a${sep}b")
         checkConcatenation(path("a"), "${sep}b${sep}", "a${sep}b")
         checkConcatenation(path("foo${sep}..${sep}.."), "..${sep}..${sep}", "foo$sep..$sep..$sep..$sep..")
-        checkConcatenation(path(""), "${sep}", sep)
-        checkConcatenation(path("${sep}"), "", sep)
+        checkConcatenation(path(""), sep, sep)
+        checkConcatenation(path(sep), "", sep)
         checkConcatenation(path("."), "bar", ".${sep}bar")
         checkConcatenation(path("bar"), ".", "bar$sep.")
         checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${sep}foo.txt")
@@ -68,7 +68,7 @@ class PathTest {
 
     private fun checkSingleFileName(path: Path, expectedName: String) {
         assertFalse(path.isAbsolute)
-        assertEquals(expectedName, path.name.toString())
+        assertEquals(expectedName, path.name)
         assertEquals(1, path.componentCount)
         assertEquals(expectedName, path.toString())
         assertNull(path.parent)
@@ -84,15 +84,15 @@ class PathTest {
 
     @Test
     fun testAbsoluteRelativePathSlashes() {
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt", "${sep}")
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}", "${sep}")
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}", "${sep}")
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt", sep)
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}", sep)
+        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}", sep)
     }
 
     private fun checkSlashes(forwardSlashPath: String, prefix: String = "") {
-        val path = path(forwardSlashPath.replace("${sep}", sep))
+        val path = path(forwardSlashPath.replace(sep, sep))
     
-        assertEquals("file.txt", path.name.toString())
+        assertEquals("file.txt", path.name)
         assertEquals(4, path.componentCount)
         assertEquals(prefix + "foo${sep}bar${sep}test${sep}file.txt", path.toString())
         assertEquals(prefix + "foo${sep}bar${sep}test", path.parent!!.toString())
@@ -107,7 +107,7 @@ class PathTest {
     @Test
     fun testDenormalizedPath() {
         val path = path("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}${sep}1.txt")
-        assertEquals("1.txt", path.name.toString())
+        assertEquals("1.txt", path.name)
         assertEquals(9, path.componentCount)
         assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}1.txt", path.toString())
         assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2", path.parent!!.toString())

@@ -15,8 +15,8 @@ fun ls(path: Path, args: Map<String, String>) {
     }
 
     if (path.isDirectory) {
-        path.openDirectory().use {
-            it.children.sortedBy { it.name.toString() }.forEach {
+        path.useDirectory {
+            it.children.sortedBy { it.name }.forEach {
                 println(describe(it))
             }
         }
@@ -31,7 +31,7 @@ private fun describe(path: Path): String {
     return attributes.permissions.toHumanReadableString() +
             "\t" + attributes.size.prettify() +
             "\t" + attributes.lastAccessTimeUs +
-            "\t" + path.name.toString()
+            "\t" + path.name
 }
 
 private fun Long.prettify(): String {

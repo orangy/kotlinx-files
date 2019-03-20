@@ -75,13 +75,6 @@ inline fun Path.openOutput(): FileOutput = fileSystem.openOutput(this)
 inline fun Path.openDirectory(): Directory = fileSystem.openDirectory(this)
 
 /**
- * Enumerates all the children of the [Directory] specified by the given path.
- * @return list of [Path] elements representing all children.
- * @throws IOException if the operation cannot be completed.
- */
-fun Path.listChildren(): List<Path> = openDirectory().use { it.children.toList() }
-
-/**
  * Reads all content from a file located at the given path and decodes it into a [String] using given [charset].
  * @throws IOException if the operation cannot be completed.
  */
@@ -168,7 +161,7 @@ fun FileSystem.copyDirectoryRecursively(source: Path, target: Path): Unit =
         }
 
         for (sourceChild in directory.children) {
-            val childName = sourceChild.name?.toString()
+            val childName = sourceChild.name
             if (childName != null) {
                 val targetChild = path(target, childName)
                 if (sourceChild.isDirectory)

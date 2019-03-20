@@ -10,14 +10,14 @@ interface Path {
     val fileSystem: FileSystem
 
     /**
-     * `Path` of the parent directory in the file system hierarchy, or null if there is no parent specified. 
+     * [Path] instance of the parent directory in the file system hierarchy, or null if there is no parent specified. 
      */
     val parent : Path?
 
     /**
-     * Last component of this Path.
+     * Text representation of the last component of this path, or null if the path has no components.
      */
-    val name: Path?
+    val name: String?
 
     /**
      * Checks if this path is an absolute, i.e. starts from the file system root.

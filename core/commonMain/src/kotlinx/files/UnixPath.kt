@@ -46,13 +46,13 @@ class UnixPath private constructor(
         }
 
     // TODO: may be lazy?
-    override val name: UnixPath?
+    override val name: String?
         get() {
             if (componentOffsets.isEmpty())
                 return null
 
             val path = normalizedPath.substring(componentOffsets.last(), normalizedPath.length)
-            return UnixPath(fileSystem, path, intArrayOf(0))
+            return path
         }
 
     override val isAbsolute: Boolean get() = normalizedPath.startsWith(fileSystem.pathSeparator)

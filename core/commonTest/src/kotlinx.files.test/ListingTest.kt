@@ -9,13 +9,13 @@ class ListingTest : TestBase() {
     @Test
     fun testNonExistentListing() {
         val path = testDirectory("non-existent-listing")
-        assertFailsWith<IOException> { path.listChildren() }
+        assertFailsWith<IOException> { path.listFiles() }
     }
 
     @Test
     fun testEmptyListing() {
         val directory = testDirectory("empty-listing").createDirectory()
-        assertTrue(directory.listChildren().isEmpty())
+        assertTrue(directory.listFiles().isEmpty())
     }
 
     @Test
@@ -25,7 +25,7 @@ class ListingTest : TestBase() {
         Path(directory.toString(), "2").createDirectory()
 
         val expected = listOf(testFile("listing${separator}1"), testDirectory("listing${separator}2")).toSet()
-        val actual = directory.listChildren().toSet()
+        val actual = directory.listFiles().toSet()
         assertEquals(expected, actual)
     }
 
@@ -37,6 +37,6 @@ class ListingTest : TestBase() {
         Path(nested.toString(), "3.txt").createFile()
 
         val expected = listOf(testFile("nested-listing${separator}1"), testDirectory("nested-listing${separator}2")).toSet()
-        assertEquals(expected, directory.listChildren().toSet())
+        assertEquals(expected, directory.listFiles().toSet())
     }
 }

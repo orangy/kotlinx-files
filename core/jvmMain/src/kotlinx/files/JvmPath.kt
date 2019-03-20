@@ -7,8 +7,8 @@ class JvmPath(override val fileSystem: JvmFileSystem, internal val platformPath:
     override val parent: Path?
         get() = platformPath.parent?.let { JvmPath(fileSystem, it) }
 
-    override val name: JvmPath?
-        get() = platformPath.fileName?.let { JvmPath(fileSystem, it) }
+    override val name: String?
+        get() = platformPath.fileName?.toString()
 
     override val isAbsolute: Boolean
         get() = platformPath.isAbsolute
