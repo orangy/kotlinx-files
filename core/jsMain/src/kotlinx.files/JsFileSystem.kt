@@ -3,6 +3,7 @@ package kotlinx.files
 import kotlinx.io.core.*
 import kotlinx.io.errors.*
 import kotlin.contracts.*
+import kotlin.reflect.*
 
 class JsFileSystem : FileSystem {
     override val pathSeparator: String
@@ -15,27 +16,11 @@ class JsFileSystem : FileSystem {
 
     override val isReadOnly: Boolean get() = false
     
-    override fun isDirectory(path: Path): Boolean {
-        checkCompatible(path)
-        if (!exists(path))
-            return false
-        val attributes = fs.lstatSync(path.toString())
-        return attributes.isDirectory() as Boolean
-    }
-
-    override fun isFile(path: Path): Boolean {
-        checkCompatible(path)
-        if (!exists(path))
-            return false
-        val attributes = fs.lstatSync(path.toString())
-        return attributes.isFile() as Boolean
-    }
-
-    override fun path(name: String, vararg children: String): UnixPath {
+    override fun path(base: String, vararg children: String): UnixPath {
         if (children.isEmpty()) {
-            return UnixPath(this, name)
+            return UnixPath(this, base)
         }
-        return UnixPath(this, "$name$pathSeparator${children.joinToString(pathSeparator)}")
+        return UnixPath(this, "$base$pathSeparator${children.joinToString(pathSeparator)}")
     }
 
     override fun exists(path: Path): Boolean {
@@ -55,15 +40,55 @@ class JsFileSystem : FileSystem {
         try {
             fs.mkdirSync(path.toString())
         } catch (e: dynamic) {
-            throw IOException("Failed to create directory: $e")
+            throw IOException("Failed to create directory $path: $e")
         }
         return path
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : FileAttributes> readAttributes(path: Path, attributesClass: KClass<T>): T {
+        checkCompatible(path)
+        if (attributesClass != FileAttributes::class && attributesClass != PosixFileAttributes::class) {
+            throw UnsupportedOperationException("File attributes of class $attributesClass are not supported by this file system")
+        }
+
+        return try {
+            val attributes = fs.lstatSync(path.toString())
+
+            PosixFileAttributes(
+                isDirectory = attributes.isDirectory() as Boolean,
+                isFile = attributes.isFile() as Boolean,
+                isSymbolicLink = attributes.isSymbolicLink() as Boolean,
+                creationTimeUs = (attributes.ctimeMs as Double).toLong() * 1000,
+                lastAccessTimeUs = (attributes.atimeMs as Double).toLong() * 1000,
+                lastModifiedTimeUs = (attributes.mtimeMs as Double).toLong() * 1000,
+                sizeBytes = (attributes.size as Double).toLong(),
+                permissions = parsePermissions((attributes.mode as Double).toInt())) as T
+        } catch (e: dynamic) {
+            throw IOException("Failed to read attributes for path $path: $e")
+        }
+    }
+
+    private fun parsePermissions(mode: Int): Set<PosixFilePermissions> {
+        val result = mutableSetOf<PosixFilePermissions>()
+        if (mode and 256 != 0) result.add(PosixFilePermissions.OWNER_READ)
+        if (mode and 128 != 0) result.add(PosixFilePermissions.OWNER_WRITE)
+        if (mode and 64 != 0) result.add(PosixFilePermissions.OWNER_EXECUTE)
+
+        if (mode and 32 != 0) result.add(PosixFilePermissions.GROUP_READ)
+        if (mode and 16 != 0) result.add(PosixFilePermissions.GROUP_WRITE)
+        if (mode and 8 != 0) result.add(PosixFilePermissions.GROUP_EXECUTE)
+
+        if (mode and 4 != 0) result.add(PosixFilePermissions.OTHERS_READ)
+        if (mode and 2 != 0) result.add(PosixFilePermissions.OTHERS_WRITE)
+        if (mode and 1 != 0) result.add(PosixFilePermissions.OTHERS_EXECUTE)
+        return result
     }
 
     override fun copy(source: Path, target: Path): UnixPath {
         checkCompatible(source)
         checkCompatible(target)
-        if (isDirectory(source)) {
+        if (source.isDirectory) {
             // TODO: Copy permissions & ownership
             createDirectory(target)
         } else {

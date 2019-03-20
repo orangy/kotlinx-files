@@ -20,8 +20,8 @@ class PosixFileInput(override val identity: String, private val fileDescriptor: 
     override val size: Long
         get()  {
             checkClosed()
-            val attributes = readAttributes(fileDescriptor)
-            return attributes.sizeBytes
+            val attributes = statAttributes(fileDescriptor)
+            return attributes.size
         }
 
     override val position: Long

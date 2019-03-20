@@ -1,20 +1,24 @@
 package kotlinx.files
 
-import platform.posix.*
-
-expect fun readAttributes(path: Path): PosixFileAttributes
-expect fun readAttributes(fd: Int): PosixFileAttributes
-
-data class PosixFileAttributes(
-    val isDirectory: Boolean,
-    val isFile: Boolean,
-    val isSymbolicLink: Boolean,
-    val creationTimeUs: Long,
-    val lastAccessTimeUs: Long,
-    val lastModifiedTimeUs: Long,
-    val sizeBytes: Long,
+class PosixFileAttributes(
+    isDirectory: Boolean,
+    isFile: Boolean,
+    isSymbolicLink: Boolean,
+    creationTimeUs: Long,
+    lastAccessTimeUs: Long,
+    lastModifiedTimeUs: Long,
+    sizeBytes: Long,
     val permissions: Set<PosixFilePermissions>
-)
+) :
+    FileAttributes(
+        isDirectory,
+        isFile,
+        isSymbolicLink,
+        creationTimeUs,
+        lastAccessTimeUs,
+        lastModifiedTimeUs,
+        sizeBytes
+    )
 
 enum class PosixFilePermissions(internal val weight: Int) {
     OWNER_READ(4),

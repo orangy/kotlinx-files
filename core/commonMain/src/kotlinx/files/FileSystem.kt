@@ -1,6 +1,7 @@
 package kotlinx.files
 
 import kotlinx.io.errors.*
+import kotlin.reflect.*
 
 /**
  * Represents a system for reading, writing, enumerating, creating and deleting files.
@@ -13,6 +14,19 @@ import kotlinx.io.errors.*
  * A file system implementation should be thread-safe.
  */
 interface FileSystem {
+    /**
+     * Checks if this instance of a file system is read-only.
+     *
+     * Note, that it is not necessary represents if an underlying physical file system is not writeable. It returns a
+     * value indicating if this instance will throw an exception on an attempt to perform a write operation through it.
+     */
+    val isReadOnly : Boolean
+
+    /**
+     * A single character used to separate hierarchical elements of the path in this file system.
+     */
+    val pathSeparator: String
+
     /**
      * Creates an instance of the [Path] interface for this file system.
      * @param base a base directory 
@@ -40,19 +54,6 @@ interface FileSystem {
     fun openDirectory(path: Path): Directory
 
     /**
-     * Checks if this instance of a file system is read-only.
-     * 
-     * Note, that it is not necessary represents if an underlying physical file system is not writeable. It returns a 
-     * value indicating if this instance will throw an exception on an attempt to perform a write operation through it.
-     */
-    val isReadOnly : Boolean
-
-    /**
-     * A single character used to separate hierarchical elements of the path in this file system.
-     */
-    val pathSeparator: String
-
-    /**
      * Opens a file at the given [path] for output. Caller is responsible for closing the returned [FileInput].
      * @return instance of [FileOutput]
      * @throws IOException if the operation cannot be completed.
@@ -74,6 +75,11 @@ interface FileSystem {
     fun createDirectory(path: Path): Path
 
     /**
+     * Reads file attributes of a requested [attributesClass] for the given [path].
+     */
+    fun <T : FileAttributes> readAttributes(path: Path, attributesClass: KClass<T>) : T 
+    
+    /**
      * Moves a file represented by [source] path to the location specified by [target] path.
      */
     fun move(source: Path, target: Path): Path
@@ -90,14 +96,4 @@ interface FileSystem {
      * @throws IOException if the operation cannot be completed.
      */
     fun delete(path: Path): Boolean
-
-    /**
-     * Checks if the given [path] refers to a directory
-     */
-    fun isDirectory(path: Path): Boolean
-
-    /**
-     * Checks if the given [path] refers to a file
-     */
-    fun isFile(path: Path): Boolean
 }

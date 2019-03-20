@@ -4,17 +4,18 @@ import kotlinx.io.core.*
 import kotlinx.io.errors.*
 import platform.posix.*
 import kotlin.contracts.*
+import kotlin.reflect.*
 
 @UseExperimental(ExperimentalIoApi::class)
 class PosixFileSystem : FileSystem {
     override val pathSeparator: String
         get() = posixPathSeparator
 
-    override fun path(name: String, vararg children: String): UnixPath {
+    override fun path(base: String, vararg children: String): UnixPath {
         if (children.isEmpty()) {
-            return UnixPath(this, name)
+            return UnixPath(this, base)
         }
-        return UnixPath(this, "$name$pathSeparator${children.joinToString(pathSeparator)}")
+        return UnixPath(this, "$base$pathSeparator${children.joinToString(pathSeparator)}")
     }
 
     override fun exists(path: Path): Boolean {
@@ -28,9 +29,6 @@ class PosixFileSystem : FileSystem {
     }
 
     override val isReadOnly: Boolean get() = false
-
-    override fun isDirectory(path: Path): Boolean = exists(path) && readAttributes(path).isDirectory
-    override fun isFile(path: Path): Boolean = exists(path) && readAttributes(path).isFile
 
     override fun createFile(path: Path): UnixPath {
         checkCompatible(path)
@@ -49,6 +47,15 @@ class PosixFileSystem : FileSystem {
             throw IOException("Failed to create directory $path with error code $errno", PosixException.forErrno())
         }
         return path
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : FileAttributes> readAttributes(path: Path, attributesClass: KClass<T>): T {
+        checkCompatible(path)
+        if (attributesClass != FileAttributes::class && attributesClass != PosixFileAttributes::class) {
+            throw UnsupportedOperationException("File attributes of class $attributesClass are not supported by this file system")
+        }
+        return statAttributes(path) as T
     }
 
     override fun copy(source: Path, target: Path): UnixPath {

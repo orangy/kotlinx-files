@@ -16,7 +16,7 @@ inline fun FileSystem.readBytes(path: Path): ByteArray = openInput(path).use { i
  * Writes all bytes from [bytes] to a file at the given [path].
  * @throws IOException if the operation cannot be completed.
  */
-inline fun FileSystem.writeBytes(path: Path, bytes: ByteArray) : Unit = openOutput(path).use { it.writeFully(bytes) }
+inline fun FileSystem.writeBytes(path: Path, bytes: ByteArray): Unit = openOutput(path).use { it.writeFully(bytes) }
 
 /**
  * Reads all bytes from a file located at the given Path and returns [ByteArray].
@@ -75,7 +75,7 @@ inline fun Path.openOutput(): FileOutput = fileSystem.openOutput(this)
 inline fun Path.openDirectory(): Directory = fileSystem.openDirectory(this)
 
 /**
- * Enumerates all the children of the [Directory] specified by the given path. 
+ * Enumerates all the children of the [Directory] specified by the given path.
  * @return list of [Path] elements representing all children.
  * @throws IOException if the operation cannot be completed.
  */
@@ -89,23 +89,23 @@ inline fun Path.readText(charset: Charset = Charsets.UTF_8): String =
     fileSystem.openInput(this).use { it.readText(charset) }
 
 /**
- * Creates a new empty file at the given path if it doesn't exist. 
+ * Creates a new empty file at the given path if it doesn't exist.
  * @return instance of a [Path] used to create a file
- * @throws IOException if the file already exists or there are not enough permissions. 
+ * @throws IOException if the file already exists or there are not enough permissions.
  */
-inline fun Path.createFile() : Path = fileSystem.createFile(this)
+inline fun Path.createFile(): Path = fileSystem.createFile(this)
 
 /**
  * Creates a new empty directory at the given path if it doesn't exist.
  * @return instance of a [Path] used to create a directory
  * @throws IOException if the directory already exists or there are not enough permissions.
  */
-inline fun Path.createDirectory() : Path = fileSystem.createDirectory(this)
+inline fun Path.createDirectory(): Path = fileSystem.createDirectory(this)
 
 /**
  * Deletes a file or a directory at the given path.
- * 
- * If the given path represents a directory, it should be empty. 
+ *
+ * If the given path represents a directory, it should be empty.
  * @throws IOException if the operation cannot be completed.
  */
 inline fun Path.delete() {
@@ -123,12 +123,20 @@ inline fun Path.deleteIfExists() = fileSystem.delete(this)
 /**
  * Checks if the given path refers to a directory
  */
-inline val Path.isDirectory: Boolean get() = fileSystem.isDirectory(this)
+inline val Path.isDirectory: Boolean get() = fileSystem.exists(this) && fileSystem.readAttributes<FileAttributes>(this).isDirectory
 
 /**
  * Checks if the given path refers to a file
  */
-inline val Path.isFile: Boolean get() = fileSystem.isFile(this)
+inline val Path.isFile: Boolean get() = fileSystem.exists(this) && fileSystem.readAttributes<FileAttributes>(this).isFile
+
+/**
+ * Checks if the given path refers to a file
+ */
+inline val Path.isSymbolicLink: Boolean
+    get() = fileSystem.exists(this) && fileSystem.readAttributes<FileAttributes>(
+        this
+    ).isSymbolicLink
 
 /**
  * Copies a file represented by a given receiver path to the location specified by [path].
@@ -176,10 +184,20 @@ fun FileSystem.copyDirectoryRecursively(source: Path, target: Path): Unit =
  */
 fun FileSystem.deleteDirectoryRecursively(path: Path): Unit = openDirectory(path).use { directory ->
     for (child in directory.children) {
-        if (isDirectory(child))
+        if (child.isDirectory)
             deleteDirectoryRecursively(child)
         else
             delete(child)
     }
     delete(path)
 }
+
+/**
+ * Reads file attributes of a requested type [T] for the given [path].
+ */
+inline fun <reified T : FileAttributes> FileSystem.readAttributes(path: Path) = readAttributes(path, T::class)
+
+/**
+ * Reads file attributes of a requested type [T] for this path.
+ */
+inline fun <reified T : FileAttributes> Path.readAttributes() = fileSystem.readAttributes(this, T::class)

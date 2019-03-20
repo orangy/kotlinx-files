@@ -12,7 +12,7 @@ fun winfstat(descriptor: Int, _Stat: CValuesRef<_stat64>?): Int = memScoped {
     fstat64!!(descriptor, _Stat?.getPointer(memScope))
 }
 
-actual fun readAttributes(path: Path): PosixFileAttributes = memScoped {
+actual fun statAttributes(path: Path): PosixFileAttributes = memScoped {
     val stat = alloc<_stat64>()
     if (winstat(path.toString(), stat.ptr) == -1) {
         throw IOException("Failed to call 'stat' on file $path.", PosixException.forErrno())
@@ -20,7 +20,7 @@ actual fun readAttributes(path: Path): PosixFileAttributes = memScoped {
     attributesFromStat(stat)
 }
 
-actual fun readAttributes(fd: Int): PosixFileAttributes = memScoped {
+actual fun statAttributes(fd: Int): PosixFileAttributes = memScoped {
     val stat = alloc<_stat64>()
     if (winfstat(fd, stat.ptr) == -1) {
         throw IOException("Failed to call 'fstat' on descriptor $fd.", PosixException.forErrno())

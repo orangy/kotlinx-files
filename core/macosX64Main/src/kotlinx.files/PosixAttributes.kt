@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import kotlinx.io.errors.*
 import platform.posix.*
 
-actual fun readAttributes(path: Path): PosixFileAttributes = memScoped {
+actual fun statAttributes(path: Path): PosixFileAttributes = memScoped {
     val stat = alloc<stat>()
     if (lstat(path.toString(), stat.ptr) == -1) {
         throw IOException("Failed to call 'lstat' on file $path.", PosixException.forErrno())
@@ -12,7 +12,7 @@ actual fun readAttributes(path: Path): PosixFileAttributes = memScoped {
     attributesFromStat(stat)
 }
 
-actual fun readAttributes(fd: Int): PosixFileAttributes = memScoped {
+actual fun statAttributes(fd: Int): PosixFileAttributes = memScoped {
     val stat = alloc<stat>()
     if (fstat(fd, stat.ptr) == -1) {
         throw IOException("Failed to call 'fstat' on descriptor $fd.", PosixException.forErrno())
