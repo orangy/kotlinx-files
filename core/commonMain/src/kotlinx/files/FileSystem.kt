@@ -21,7 +21,7 @@ interface FileSystem {
     fun path(base: String, vararg children: String): Path
 
     /**
-     * Checks if the given [path] represents an existing file or directoy.
+     * Checks if the given [path] represents an existing file or directory.
      */
     fun exists(path: Path): Boolean
 
