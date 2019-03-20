@@ -16,3 +16,8 @@ interface Directory : Closeable {
  * Enumerates files and folders in the directory represented by [path] and calls [consumer] on each of them.
  */
 fun FileSystem.forEachFile(path: Path, consumer: (Path) -> Unit): Unit = openDirectory(path).children.forEach(consumer)
+
+/**
+ * Enumerates files and folders in the directory represented by this oath and calls [consumer] on each of them.
+ */
+fun Path.forEachFile(consumer: (Path) -> Unit): Unit = fileSystem.openDirectory(this).children.forEach(consumer)
