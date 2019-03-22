@@ -3,59 +3,61 @@ package kotlinx.files.test
 import kotlinx.files.*
 import kotlin.test.*
 
-class PathTest {
-    private val fs = FileSystems.Default
-    private val sep = fs.pathSeparator
+abstract class PathTest(private val fileSystem: FileSystem) {
+    private fun path(path: String) = fileSystem.path(path)
+    protected val separator get() = fileSystem.pathSeparator
 
-    private fun path(path: String) = UnixPath(fs, path)
-    
     @Test
-    fun testEmptyPath() {
+    fun pathEmpty() {
         val path = path("")
         checkSingleFileName(path, "")
     }
 
     @Test
-    fun testWorkingDirectory() {
+    fun pathCurrentDirectory() {
         val path = path(".")
         checkSingleFileName(path, ".")
     }
 
     @Test
-    fun testParentDirectory() {
+    fun pathParentDirectory() {
         val path = path("..")
         checkSingleFileName(path, "..")
     }
 
     @Test
-    fun testRoot() {
-        val path = path(sep)
+    fun pathRoot() {
+        val path = path(separator)
         assertTrue(path.isAbsolute)
         assertNull(path.name)
         assertEquals(0, path.componentCount)
-        assertEquals(sep, path.toString())
+        assertEquals(separator, path.toString())
         assertNull(path.parent)
         assertFailsWith<IllegalArgumentException> { path.component(0) }
     }
 
     @Test
-    fun testSingleFile() {
+    fun pathFileName() {
         val path = path("42.txt")
         checkSingleFileName(path, "42.txt")
     }
 
     @Test
-    fun testPathConcatenation() {
+    fun pathConcatenation() {
         // Where is my parametrized :(
 
-        checkConcatenation(path("a"), "b", "a${sep}b")
-        checkConcatenation(path("a"), "${sep}b${sep}", "a${sep}b")
-        checkConcatenation(path("foo${sep}..${sep}.."), "..${sep}..${sep}", "foo$sep..$sep..$sep..$sep..")
-        checkConcatenation(path(""), sep, sep)
-        checkConcatenation(path(sep), "", sep)
-        checkConcatenation(path("."), "bar", ".${sep}bar")
-        checkConcatenation(path("bar"), ".", "bar$sep.")
-        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${sep}foo.txt")
+        checkConcatenation(path("a"), "b", "a${separator}b")
+        checkConcatenation(path("a"), "${separator}b$separator", "a${separator}b")
+        checkConcatenation(
+            path("foo$separator..$separator.."),
+            "..$separator..$separator",
+            "foo$separator..$separator..$separator..$separator.."
+        )
+        checkConcatenation(path(""), separator, separator)
+        checkConcatenation(path(separator), "", separator)
+        checkConcatenation(path("."), "bar", ".${separator}bar")
+        checkConcatenation(path("bar"), ".", "bar$separator.")
+        checkConcatenation(path("foo.txt"), "foo.txt", "foo.txt${separator}foo.txt")
     }
 
     private fun checkConcatenation(base: Path, other: String, expected: String) {
@@ -76,26 +78,35 @@ class PathTest {
     }
 
     @Test
-    fun testRelativePathSlashes() {
-        checkSlashes("foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt")
-        checkSlashes("foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}")
-        checkSlashes("foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}")
+    fun pathRelativeSlashes() {
+        checkSlashes("foo${separator}bar$separator${separator}test$separator$separator${separator}file.txt")
+        checkSlashes("foo${separator}bar$separator${separator}test$separator$separator${separator}file.txt$separator")
+        checkSlashes("foo${separator}bar$separator${separator}test${separator}file.txt$separator$separator")
     }
 
     @Test
-    fun testAbsoluteRelativePathSlashes() {
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt", sep)
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}${sep}${sep}file.txt${sep}", sep)
-        checkSlashes("${sep}foo${sep}bar${sep}${sep}test${sep}file.txt${sep}${sep}", sep)
+    fun pathAbsoluteSlashes() {
+        checkSlashes(
+            "${separator}foo${separator}bar$separator${separator}test$separator$separator${separator}file.txt",
+            separator
+        )
+        checkSlashes(
+            "${separator}foo${separator}bar$separator${separator}test$separator$separator${separator}file.txt$separator",
+            separator
+        )
+        checkSlashes(
+            "${separator}foo${separator}bar$separator${separator}test${separator}file.txt$separator$separator",
+            separator
+        )
     }
 
     private fun checkSlashes(forwardSlashPath: String, prefix: String = "") {
-        val path = path(forwardSlashPath.replace(sep, sep))
-    
+        val path = path(forwardSlashPath.replace(separator, separator))
+
         assertEquals("file.txt", path.name)
         assertEquals(4, path.componentCount)
-        assertEquals(prefix + "foo${sep}bar${sep}test${sep}file.txt", path.toString())
-        assertEquals(prefix + "foo${sep}bar${sep}test", path.parent!!.toString())
+        assertEquals(prefix + "foo${separator}bar${separator}test${separator}file.txt", path.toString())
+        assertEquals(prefix + "foo${separator}bar${separator}test", path.parent!!.toString())
 
         assertEquals("foo", path.component(0).toString())
         assertEquals("bar", path.component(1).toString())
@@ -105,12 +116,19 @@ class PathTest {
 
 
     @Test
-    fun testDenormalizedPath() {
-        val path = path("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}${sep}1.txt")
+    fun pathDenormalized() {
+        val path =
+            path("1${separator}2${separator}3$separator..${separator}3$separator..$separator..${separator}2$separator${separator}1.txt")
         assertEquals("1.txt", path.name)
         assertEquals(9, path.componentCount)
-        assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2${sep}1.txt", path.toString())
-        assertEquals("1${sep}2${sep}3${sep}..${sep}3${sep}..${sep}..${sep}2", path.parent!!.toString())
+        assertEquals(
+            "1${separator}2${separator}3$separator..${separator}3$separator..$separator..${separator}2${separator}1.txt",
+            path.toString()
+        )
+        assertEquals(
+            "1${separator}2${separator}3$separator..${separator}3$separator..$separator..${separator}2",
+            path.parent!!.toString()
+        )
 
         assertEquals("1", path.component(0).toString())
         assertEquals("2", path.component(1).toString())

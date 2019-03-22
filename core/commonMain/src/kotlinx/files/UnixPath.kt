@@ -60,7 +60,7 @@ class UnixPath private constructor(
     override val componentCount: Int
         get() = componentOffsets.size
 
-    override fun component(index: Int): UnixPath {
+    override fun component(index: Int): String {
         if (index < 0 || index >= componentOffsets.size) {
             throw IllegalArgumentException("Illegal index: $index, should be in [0, ${componentOffsets.size - 1}]")
         }
@@ -73,8 +73,7 @@ class UnixPath private constructor(
             componentOffsets[index + 1] - begin - 1
         }
 
-        val path = normalizedPath.substring(begin, begin + len)
-        return UnixPath(fileSystem, path, intArrayOf(0))
+        return normalizedPath.substring(begin, begin + len)
     }
 
     fun resolve(other: Path): UnixPath {

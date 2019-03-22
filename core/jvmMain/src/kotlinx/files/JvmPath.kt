@@ -1,6 +1,5 @@
 package kotlinx.files
 
-import java.nio.file.*
 import java.nio.file.Path as JavaPath
 
 class JvmPath(override val fileSystem: JvmFileSystem, internal val platformPath: JavaPath) : Path {
@@ -16,7 +15,7 @@ class JvmPath(override val fileSystem: JvmFileSystem, internal val platformPath:
     override val componentCount: Int
         get() = platformPath.nameCount
 
-    override fun component(index: Int): Path = JvmPath(fileSystem, platformPath.getName(index))
+    override fun component(index: Int): String = platformPath.getName(index).toString()
     
     fun toJavaPath() = platformPath
 

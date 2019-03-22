@@ -46,6 +46,14 @@ inline fun FileSystem.path(base: Path, vararg children: String): Path = path(bas
 inline fun Path(base: String, vararg children: String): Path = FileSystems.Default.path(base, *children)
 
 /**
+ * Constructs a new instance of the [Path] for the same file system with this path and all [children].
+ * @return instance of [Path] representing a combined path in the same file system.
+ * @throws IOException if the operation cannot be completed.
+ */
+@Suppress("FunctionName")
+inline fun Path.resolve(vararg children: String): Path = fileSystem.path(this, *children)
+
+/**
  * Constructs a new instance of the [Path] for the default file system with the [base] path and all [children].
  * @return instance of [Path] representing a combined path in the default file system.
  * @throws IOException if the operation cannot be completed.
@@ -96,6 +104,25 @@ inline fun Path.createFile(): Path = fileSystem.createFile(this)
 inline fun Path.createDirectory(): Path = fileSystem.createDirectory(this)
 
 /**
+ * Creates a new empty directory at the given [path] and any parent directories that doesn't exist.
+ * @return instance of a [Path] used to create a directory
+ * @throws IOException if the directory already exists or there are not enough permissions.
+ */
+fun FileSystem.createAllDirectories(path: Path): Path {
+    val parent = path.parent ?: return createDirectory(path)
+    if (!exists(parent))
+        createAllDirectories(parent)
+    return createDirectory(path)
+}
+
+/**
+ * Creates a new empty directory and any parent directories that doesn't exist.
+ * @return instance of a [Path] used to create a directory
+ * @throws IOException if the directory already exists or there are not enough permissions.
+ */
+inline fun Path.createAllDirectories(): Path = fileSystem.createAllDirectories(this)
+
+/**
  * Deletes a file or a directory at the given path.
  *
  * If the given path represents a directory, it should be empty.
@@ -104,7 +131,8 @@ inline fun Path.createDirectory(): Path = fileSystem.createDirectory(this)
 inline fun Path.delete() {
     if (fileSystem.delete(this))
         return
-    throw IOException("File $this doesn't exist")
+    // TODO: refactor to provide proper reason
+    throw IOException("File $this doesn't exist or directory not empty")
 }
 
 /**
@@ -194,3 +222,5 @@ inline fun <reified T : FileAttributes> FileSystem.readAttributes(path: Path) = 
  * Reads file attributes of a requested type [T] for this path.
  */
 inline fun <reified T : FileAttributes> Path.readAttributes() = fileSystem.readAttributes(this, T::class)
+
+

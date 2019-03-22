@@ -35,6 +35,6 @@ interface Path {
      * 
      * Index should be non-negative and less than [componentCount]
      */
-    fun component(index: Int) : Path
+    fun component(index: Int) : String
 }
 
