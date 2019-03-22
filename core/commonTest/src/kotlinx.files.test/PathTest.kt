@@ -30,6 +30,7 @@ abstract class PathTest(private val fileSystem: FileSystem) {
         val path = path(separator)
         
         // TODO: how to properly test it on windows? It needs a drive letter, I suppose. And there is no root?
+        //  Oh, and "C:foo.txt" is a relative path, not absolute, because Windows has CWD for each drive
         // assertTrue(path.isAbsolute, "Root path should be absolute")
         
         assertNull(path.name, "Root path should have no name")
@@ -111,10 +112,10 @@ abstract class PathTest(private val fileSystem: FileSystem) {
         assertEquals(prefix + "foo${separator}bar${separator}test${separator}file.txt", path.toString())
         assertEquals(prefix + "foo${separator}bar${separator}test", path.parent!!.toString())
 
-        assertEquals("foo", path.component(0).toString())
-        assertEquals("bar", path.component(1).toString())
-        assertEquals("test", path.component(2).toString())
-        assertEquals("file.txt", path.component(3).toString())
+        assertEquals("foo", path.component(0))
+        assertEquals("bar", path.component(1))
+        assertEquals("test", path.component(2))
+        assertEquals("file.txt", path.component(3))
     }
 
 
@@ -133,10 +134,9 @@ abstract class PathTest(private val fileSystem: FileSystem) {
             path.parent!!.toString()
         )
 
-        assertEquals("1", path.component(0).toString())
-        assertEquals("2", path.component(1).toString())
-        assertEquals("3", path.component(2).toString())
-        assertEquals("..", path.component(3).toString())
+        assertEquals("1", path.component(0))
+        assertEquals("2", path.component(1))
+        assertEquals("3", path.component(2))
+        assertEquals("..", path.component(3))
     }
-
 }

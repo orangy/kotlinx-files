@@ -1,24 +1,33 @@
 package kotlinx.files.memory
 
 import kotlinx.files.*
+import kotlinx.files.platform.*
 import kotlinx.io.errors.*
-
-internal fun currentTime(): Long {
-    // TODO: mpp current timestamp
-    return 1525968223L * 1e6.toLong()
-}
 
 internal sealed class MemoryCatalogueEntry(
     val fileSystem: MemoryFileSystem,
     val name: String,
     val parent: MemoryCatalogueDirectory?
 ) {
+    private val creationTimestamp = currentTimeMicrosSinceEpoch()
+    private var modificationTimestamp = creationTimestamp
+    private var accessTimestamp = creationTimestamp
+
+    fun registerModification() {
+        modificationTimestamp = currentTimeMicrosSinceEpoch()
+        accessTimestamp = modificationTimestamp
+    }
+
+    fun registerAccess() {
+        accessTimestamp = currentTimeMicrosSinceEpoch()
+    }
+    
     fun readAttributes(): FileAttributes {
         return FileAttributes(
             this is MemoryCatalogueDirectory,
             this is MemoryCatalogueFile,
             false,
-            currentTime(), currentTime(), currentTime(),
+            creationTimestamp, accessTimestamp, modificationTimestamp,
             if (this is MemoryCatalogueFile) data.size.toLong() else 0
         )
     }
@@ -44,8 +53,13 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
     MemoryCatalogueEntry(fileSystem, name, parent) {
     internal var entries: MutableMap<String, MemoryCatalogueEntry>? = null
 
-    fun get(name: String): MemoryCatalogueEntry? = entries?.get(name)
-    fun isEmpty(): Boolean = entries?.isEmpty() ?: true
+    fun get(name: String): MemoryCatalogueEntry? {
+        return entries?.get(name)
+    }
+
+    fun isEmpty(): Boolean {
+        return entries?.isEmpty() ?: true
+    }
 
     fun delete(name: String): Boolean {
         if (entries == null)
@@ -55,6 +69,8 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
         if (item is MemoryCatalogueDirectory && !item.isEmpty())
             return false
 
+        registerModification()
+
         return entries!!.remove(name) != null
     }
 
@@ -63,14 +79,19 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
             is MemoryCatalogueFile -> {
                 val newFile = createFile(name)
                 newFile.data = source.data
-                source.parent?.entries?.remove(source.name)
             }
             is MemoryCatalogueDirectory -> {
                 val newFile = createDirectory(name)
                 newFile.entries = source.entries
-                source.parent?.entries?.remove(source.name)
             }
         }
+
+        source.parent?.apply {
+            entries?.remove(source.name)
+            registerModification()
+        }
+
+        registerModification()
     }
 
     fun createDirectory(name: String): MemoryCatalogueDirectory {
@@ -79,6 +100,7 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
 
         val directory = MemoryCatalogueDirectory(fileSystem, name, this)
         entries!!.put(name, directory)
+        registerModification()
         return directory
     }
 
@@ -88,6 +110,7 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
 
         val file = MemoryCatalogueFile(fileSystem, name, this)
         entries!!.put(name, file)
+        registerModification()
         return file
     }
 
@@ -95,6 +118,7 @@ internal class MemoryCatalogueDirectory(fileSystem: MemoryFileSystem, name: Stri
         var directory: MemoryCatalogueDirectory = this
         val count = path.componentCount
         for (index in 0 until count) {
+            directory.registerAccess()
             val name = path.component(index)
             when (val item = directory.get(name)) {
                 is MemoryCatalogueDirectory -> directory = item
@@ -117,10 +141,12 @@ internal class MemoryCatalogueFile(fileSystem: MemoryFileSystem, name: String, p
     internal var data: ByteArray = byteArrayOf()
 
     fun openInput(): FileInput {
+        registerAccess()
         return MemoryFileInput(buildPath().toString(), this)
     }
 
     fun openOutput(): FileOutput {
+        registerModification()
         return MemoryFileOutput(buildPath().toString(), this)
     }
 }

@@ -1,6 +1,7 @@
 package kotlinx.files.test
 
 import kotlinx.files.*
+import kotlinx.files.platform.*
 import kotlinx.io.core.*
 import kotlinx.io.errors.*
 import kotlin.test.*
@@ -22,6 +23,24 @@ abstract class StandardFileSystemTest(fileSystem: FileSystem) : FileSystemTestBa
         file.writeBytes(ByteArray(42) { it.toByte() })
         val attributes2 = file.readAttributes<FileAttributes>()
         assertEquals(42, attributes2.size)
+
+
+        // TODO: somehow check it for MemFS, but not NTFS? 
+        // For MemFS make sure to wait at least microsecond for a timer to tick before writing data. 
+        // https://docs.microsoft.com/en-us/windows/desktop/sysinfo/file-times
+        // The NTFS file system delays updates to the last access time for a file by up to 1 hour after the last access.
+/*
+        assertTrue(
+            attributes2.lastModifiedTimeUs > attributes.lastModifiedTimeUs,
+            "Last modified time should be touched: ${attributes2.lastModifiedTimeUs} > ${attributes.lastModifiedTimeUs}"
+        )
+
+        assertTrue(
+            attributes2.lastAccessTimeUs > attributes.lastAccessTimeUs,
+            "Last access time should be touched: ${attributes2.lastAccessTimeUs} > ${attributes.lastAccessTimeUs}"
+        )
+        assertEquals(attributes2.creationTimeUs, attributes.creationTimeUs, "Creation time should not be touched")
+*/
     }
 
     @Test
@@ -39,11 +58,11 @@ abstract class StandardFileSystemTest(fileSystem: FileSystem) : FileSystemTestBa
         assertFailsWith<IOException> { path.readAttributes<FileAttributes>() }
     }
 
-
     // This test fails on Windows
     // On JVM because PosixFileAttributes is not supported
     // On JS & Native because permissions are different
     // TODO: Design how to specify different assertions on different OSes
+    @Suppress("SpellCheckingInspection")
     @Test
     @Ignore
     fun attributesPosixPermissions() {
@@ -425,4 +444,11 @@ abstract class StandardFileSystemTest(fileSystem: FileSystem) : FileSystemTestBa
         val target = this.testPath("existing-file").createFile()
         assertFailsWith<IOException> { file.moveTo(target) }
     }
+}
+
+fun assertTimeMakesSense(timestampUs: Long) {
+    // Yay, common time module!
+    val seconds = timestampUs / 1e6.toLong()
+    // in now()..now() * 10 ~~ 2018/5/10..2453/07/23
+    assertTrue(seconds in 1525968223..15259682219, "Time $timestampUs doesn't make any sense")
 }
