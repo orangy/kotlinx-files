@@ -153,10 +153,10 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
         param(releaseVersionParameter, "dev")
+     
+        // Tell configuration build how to get release version parameter from this build
+        param(configureBuild.reverseDepParamRefs[releaseVersionParameter], "%$releaseVersionParameter%")
     }
-
-    // Tell configuration build how to get release version parameter from this build
-    param(configureBuild.reverseDepParamRefs[releaseVersionParameter], "%$releaseVersionParameter%")
 
     commonConfigure()
 }.also { buildType(it) }.dependsOnSnapshot(configureBuild)
