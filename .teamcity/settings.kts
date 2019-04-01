@@ -156,7 +156,7 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     }
 
     // Tell configuration build how to get release version parameter from this build
-    configureBuild.params.param(releaseVersionParameter, "${reverseDepParamRefs[releaseVersionParameter]}")
+    param(configureBuild.reverseDepParamRefs[releaseVersionParameter], "%$releaseVersionParameter%")
 
     commonConfigure()
 }.also { buildType(it) }.dependsOnSnapshot(configureBuild)
