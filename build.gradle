@@ -8,7 +8,7 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-33"
+        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-36"
     }
 }
 
@@ -31,6 +31,19 @@ infra {
             username = findProperty('bintrayUser')
             password = findProperty('bintrayApiKey')
         }
+        
+        bintrayDev {
+            organization = 'orangy'
+            repository = 'maven'
+            library = 'kotlinx-files-dev'
+
+            username = findProperty('bintrayUser')
+            password = findProperty('bintrayApiKey')
+        }
+    }
+
+    apiCheck {
+        include(":kotlinx-files")
     }
 
     node {
