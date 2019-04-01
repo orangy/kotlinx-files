@@ -155,7 +155,7 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
         param(releaseVersionParameter, "dev")
 
         // Tell configuration build how to get release version parameter from this build
-        param("${configureBuild.reverseDepParamRefs[releaseVersionParameter]}", "%$releaseVersionParameter%")
+        param(configureBuild.reverseDepParamRefs[releaseVersionParameter].name, "%$releaseVersionParameter%")
     }
 
     commonConfigure()
