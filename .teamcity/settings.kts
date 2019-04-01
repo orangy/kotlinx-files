@@ -71,7 +71,7 @@ fun Project.buildAll() = BuildType {
     id("Build_All")
     this.name = "Build (All)"
     type = BuildTypeSettings.Type.COMPOSITE
-    
+
     triggers {
         vcs {
             triggerRules = """
@@ -80,7 +80,7 @@ fun Project.buildAll() = BuildType {
                 """.trimIndent()
         }
     }
-    
+
     commonConfigure()
 }.also { buildType(it) }
 
@@ -128,8 +128,6 @@ fun Project.deployConfigure() = BuildType {
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
         param(versionSuffixParameter, "dev-%build.counter%")
-        // Intentionally left empty. Gradle will ignore empty values and in custom build it can be specified
-        param(releaseVersionParameter, "dev") 
     }
 
     requirements {
@@ -154,8 +152,12 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     type = BuildTypeSettings.Type.COMPOSITE
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
-        param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
+        param(releaseVersionParameter, "dev")
     }
+
+    // Tell configuration build how to get release version parameter from this build
+    configureBuild.params.param(releaseVersionParameter, "${reverseDepParamRefs[releaseVersionParameter]}")
+
     commonConfigure()
 }.also { buildType(it) }.dependsOnSnapshot(configureBuild)
 
