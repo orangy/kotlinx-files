@@ -1,0 +1,405 @@
+package kotlinx
+{
+}
+
+package kotlinx.files
+{
+   public interface Directory : kotlinx.io.core.Closeable
+   {
+       public abstract val children: kotlin.collections.Iterable<kotlinx.files.Path> { get; }
+   }
+
+   public open class FileAttributes
+   {
+       public final val creationTimeUs: kotlin.Long { get; }
+       public final val isDirectory: kotlin.Boolean { get; }
+       public final val isFile: kotlin.Boolean { get; }
+       public final val isSymbolicLink: kotlin.Boolean { get; }
+       public final val lastAccessTimeUs: kotlin.Long { get; }
+       public final val lastModifiedTimeUs: kotlin.Long { get; }
+       public final val size: kotlin.Long { get; }
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun toString(): kotlin.String
+
+       public constructor FileAttributes(isDirectory: kotlin.Boolean, isFile: kotlin.Boolean, isSymbolicLink: kotlin.Boolean, creationTimeUs: kotlin.Long, lastAccessTimeUs: kotlin.Long, lastModifiedTimeUs: kotlin.Long, size: kotlin.Long)
+
+   }
+
+   public interface FileInput : kotlinx.io.core.Input
+   {
+       public abstract val identity: kotlin.String { get; }
+       public abstract val position: kotlin.Long { get; }
+       public abstract val size: kotlin.Long { get; }
+       public abstract fun seek(position: kotlin.Long): kotlin.Unit
+
+   }
+
+   public interface FileOutput : kotlinx.io.core.Output
+   {
+       public abstract val identity: kotlin.String { get; }
+       public abstract val position: kotlin.Long { get; }
+       public abstract val size: kotlin.Long { get; }
+       public abstract fun seek(position: kotlin.Long): kotlin.Unit
+
+   }
+
+   public interface FileSystem
+   {
+       public abstract val isReadOnly: kotlin.Boolean { get; }
+       public abstract val pathSeparator: kotlin.String { get; }
+       public abstract fun copy(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.Path
+
+       public abstract fun createDirectory(path: kotlinx.files.Path): kotlinx.files.Path
+
+       public abstract fun createFile(path: kotlinx.files.Path): kotlinx.files.Path
+
+       public abstract fun delete(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public abstract fun exists(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public abstract fun move(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.Path
+
+       public abstract fun openDirectory(path: kotlinx.files.Path): kotlinx.files.Directory
+
+       public abstract fun openInput(path: kotlinx.files.Path): kotlinx.files.FileInput
+
+       public abstract fun openOutput(path: kotlinx.files.Path): kotlinx.files.FileOutput
+
+       public abstract fun path(base: kotlin.String, vararg children: kotlin.String): kotlinx.files.Path
+
+       public abstract fun <T : kotlinx.files.FileAttributes> readAttributes(path: kotlinx.files.Path, attributesClass: kotlin.reflect.KClass<T>): T
+
+       public open override fun toString(): kotlin.String
+
+   }
+
+   public object FileSystems
+   {
+       public final val Default: kotlinx.files.FileSystem { get; }
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun toString(): kotlin.String
+
+   }
+
+   public final class JsDirectory : kotlinx.files.Directory
+   {
+       public open override val children: kotlin.collections.Iterable<kotlinx.files.UnixPath> { get; }
+       public open fun close(): kotlin.Unit
+
+       public constructor JsDirectory(fileSystem: kotlinx.files.JsFileSystem, path: kotlinx.files.UnixPath)
+
+   }
+
+   public final class JsFileInput : kotlinx.io.core.AbstractInput, kotlinx.files.FileInput
+   {
+       public open override val identity: kotlin.String { get; }
+       public open override val position: kotlin.Long { get; }
+       public open override val size: kotlin.Long { get; }
+       protected open fun closeSource(): kotlin.Unit
+
+       protected open fun fill(): kotlinx.io.core.IoBuffer?
+
+       public open override fun seek(position: kotlin.Long): kotlin.Unit
+
+       public constructor JsFileInput(identity: kotlin.String, fileDescriptor: kotlin.Int)
+
+   }
+
+   public final class JsFileOutput : kotlinx.io.core.AbstractOutput, kotlinx.files.FileOutput
+   {
+       public open override val identity: kotlin.String { get; }
+       public open override val position: kotlin.Long { get; }
+       public open override val size: kotlin.Long { get; }
+       protected open fun closeDestination(): kotlin.Unit
+
+       protected open fun flush(buffer: kotlinx.io.core.IoBuffer): kotlin.Unit
+
+       public open override fun seek(position: kotlin.Long): kotlin.Unit
+
+       public constructor JsFileOutput(identity: kotlin.String, fileDescriptor: kotlin.Int)
+
+   }
+
+   public final class JsFileSystem : kotlinx.files.FileSystem
+   {
+       public open override val isReadOnly: kotlin.Boolean { get; }
+       public open override val pathSeparator: kotlin.String { get; }
+       public open override fun copy(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.UnixPath
+
+       public open override fun createDirectory(path: kotlinx.files.Path): kotlinx.files.UnixPath
+
+       public open override fun createFile(path: kotlinx.files.Path): kotlinx.files.UnixPath
+
+       public open override fun delete(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun exists(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun move(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.UnixPath
+
+       public open override fun openDirectory(path: kotlinx.files.Path): kotlinx.files.JsDirectory
+
+       public open override fun openInput(path: kotlinx.files.Path): kotlinx.files.JsFileInput
+
+       public open override fun openOutput(path: kotlinx.files.Path): kotlinx.files.JsFileOutput
+
+       public open override fun path(base: kotlin.String, vararg children: kotlin.String): kotlinx.files.UnixPath
+
+       public open override fun <T : kotlinx.files.FileAttributes> readAttributes(path: kotlinx.files.Path, attributesClass: kotlin.reflect.KClass<T>): T
+
+       public open override fun toString(): kotlin.String
+
+       public companion object of JsFileSystem
+       {
+           public final val Default: kotlinx.files.JsFileSystem { get; }
+           public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+           public open override fun hashCode(): kotlin.Int
+
+           public open override fun toString(): kotlin.String
+
+       }
+
+       public constructor JsFileSystem()
+
+   }
+
+   public interface Path
+   {
+       public abstract val componentCount: kotlin.Int { get; }
+       public abstract val fileSystem: kotlinx.files.FileSystem { get; }
+       public abstract val isAbsolute: kotlin.Boolean { get; }
+       public abstract val name: kotlin.String? { get; }
+       public abstract val parent: kotlinx.files.Path? { get; }
+       public abstract fun component(index: kotlin.Int): kotlin.String
+
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun toString(): kotlin.String
+
+   }
+
+   public final class PosixFileAttributes : kotlinx.files.FileAttributes
+   {
+       public final override val creationTimeUs: kotlin.Long { get; }
+       public final override val isDirectory: kotlin.Boolean { get; }
+       public final override val isFile: kotlin.Boolean { get; }
+       public final override val isSymbolicLink: kotlin.Boolean { get; }
+       public final override val lastAccessTimeUs: kotlin.Long { get; }
+       public final override val lastModifiedTimeUs: kotlin.Long { get; }
+       public final val permissions: kotlin.collections.Set<kotlinx.files.PosixFilePermissions> { get; }
+       public final override val size: kotlin.Long { get; }
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun toString(): kotlin.String
+
+       public constructor PosixFileAttributes(isDirectory: kotlin.Boolean, isFile: kotlin.Boolean, isSymbolicLink: kotlin.Boolean, creationTimeUs: kotlin.Long, lastAccessTimeUs: kotlin.Long, lastModifiedTimeUs: kotlin.Long, sizeBytes: kotlin.Long, permissions: kotlin.collections.Set<kotlinx.files.PosixFilePermissions>)
+
+   }
+
+   public final enum class PosixFilePermissions : kotlin.Enum<kotlinx.files.PosixFilePermissions>
+   {
+       enum entry OWNER_READ
+
+       enum entry OWNER_WRITE
+
+       enum entry OWNER_EXECUTE
+
+       enum entry GROUP_READ
+
+       enum entry GROUP_WRITE
+
+       enum entry GROUP_EXECUTE
+
+       enum entry OTHERS_READ
+
+       enum entry OTHERS_WRITE
+
+       enum entry OTHERS_EXECUTE
+
+       enum entry SETUID
+
+       enum entry SETGID
+
+       enum entry STICKY_BIT
+
+       public final override val name: kotlin.String { get; }
+       public final override val ordinal: kotlin.Int { get; }
+       protected final override fun clone(): kotlin.Any
+
+       public final override operator fun compareTo(other: kotlinx.files.PosixFilePermissions): kotlin.Int
+
+       public final override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public final override fun hashCode(): kotlin.Int
+
+       public open override fun toString(): kotlin.String
+
+       public companion object of PosixFilePermissions
+       {
+           public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+           public open override fun hashCode(): kotlin.Int
+
+           public open override fun toString(): kotlin.String
+
+       }
+
+   }
+
+   public final class UnixPath : kotlinx.files.Path
+   {
+       public open override val componentCount: kotlin.Int { get; }
+       public open override val fileSystem: kotlinx.files.FileSystem { get; }
+       public open override val isAbsolute: kotlin.Boolean { get; }
+       public open override val name: kotlin.String? { get; }
+       public open override val parent: kotlinx.files.UnixPath? { get; }
+       public open override fun component(index: kotlin.Int): kotlin.String
+
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public final fun resolve(other: kotlinx.files.Path): kotlinx.files.UnixPath
+
+       public open override fun toString(): kotlin.String
+
+       public constructor UnixPath(fileSystem: kotlinx.files.FileSystem, path: kotlin.String)
+
+   }
+
+   public val kotlinx.files.Path.extension: kotlin.String? { get; }
+   public val kotlinx.files.Path.isDirectory: kotlin.Boolean { get; }
+   public val kotlinx.files.Path.isFile: kotlin.Boolean { get; }
+   public val kotlinx.files.Path.isSymbolicLink: kotlin.Boolean { get; }
+   public inline fun Path(base: kotlin.String, vararg children: kotlin.String): kotlinx.files.Path
+
+   public inline fun Path(base: kotlinx.files.Path, vararg children: kotlin.String): kotlinx.files.Path
+
+   public fun createPlatformFileSystem(): kotlinx.files.FileSystem
+
+   public fun kotlinx.files.FileSystem.copyDirectoryRecursively(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlin.Unit
+
+   public inline fun kotlinx.files.Path.copyTo(path: kotlinx.files.Path): kotlinx.files.Path
+
+   public fun kotlinx.files.FileSystem.createAllDirectories(path: kotlinx.files.Path): kotlinx.files.Path
+
+   public inline fun kotlinx.files.Path.createAllDirectories(): kotlinx.files.Path
+
+   public inline fun kotlinx.files.Path.createDirectory(): kotlinx.files.Path
+
+   public inline fun kotlinx.files.Path.createFile(): kotlinx.files.Path
+
+   public inline fun kotlinx.files.Path.delete(): kotlin.Unit
+
+   public fun kotlinx.files.FileSystem.deleteDirectoryRecursively(path: kotlinx.files.Path): kotlin.Unit
+
+   public inline fun kotlinx.files.Path.deleteIfExists(): kotlin.Boolean
+
+   public inline fun kotlinx.files.Path.exists(): kotlin.Boolean
+
+   public fun kotlinx.files.FileSystem.forEachFile(path: kotlinx.files.Path, consumer: (kotlinx.files.Path) -> kotlin.Unit): kotlin.Unit
+
+   public fun kotlinx.files.Path.forEachFile(consumer: (kotlinx.files.Path) -> kotlin.Unit): kotlin.Unit
+
+   public fun kotlinx.files.Path.listFiles(): kotlin.collections.List<kotlinx.files.Path>
+
+   public inline fun kotlinx.files.Path.moveTo(path: kotlinx.files.Path): kotlinx.files.Path
+
+   public inline fun kotlinx.files.Path.openDirectory(): kotlinx.files.Directory
+
+   public inline fun kotlinx.files.Path.openInput(): kotlinx.files.FileInput
+
+   public inline fun kotlinx.files.Path.openOutput(): kotlinx.files.FileOutput
+
+   public inline fun kotlinx.files.FileSystem.path(base: kotlinx.files.Path, vararg children: kotlin.String): kotlinx.files.Path
+
+   public operator fun kotlinx.files.Path.plus(other: kotlin.String): kotlinx.files.Path
+
+   public operator fun kotlinx.files.Path.plus(other: kotlinx.files.Path): kotlinx.files.Path
+
+   public inline fun <reified T : kotlinx.files.FileAttributes> kotlinx.files.FileSystem.readAttributes(path: kotlinx.files.Path): T
+
+   public inline fun <reified T : kotlinx.files.FileAttributes> kotlinx.files.Path.readAttributes(): T
+
+   public inline fun kotlinx.files.FileSystem.readBytes(path: kotlinx.files.Path): kotlin.ByteArray
+
+   public inline fun kotlinx.files.Path.readBytes(): kotlin.ByteArray
+
+   public inline fun kotlinx.files.Path.readText(charset: kotlinx.io.charsets.Charset = ...): kotlin.String
+
+   public inline fun kotlinx.files.Path.resolve(vararg children: kotlin.String): kotlinx.files.Path
+
+   public fun kotlin.collections.Set<kotlinx.files.PosixFilePermissions>.toHumanReadableString(): kotlin.String
+
+   public fun kotlin.collections.Set<kotlinx.files.PosixFilePermissions>.toOctString(): kotlin.String
+
+   public fun <R> kotlinx.files.Path.useDirectory(operation: (kotlinx.files.Directory) -> R): R
+
+   public inline fun kotlinx.files.FileSystem.writeBytes(path: kotlinx.files.Path, bytes: kotlin.ByteArray): kotlin.Unit
+
+   public inline fun kotlinx.files.Path.writeBytes(bytes: kotlin.ByteArray): kotlin.Unit
+
+}
+
+package kotlinx.files.memory
+{
+   public final class MemoryFileSystem : kotlinx.files.FileSystem
+   {
+       public open override val isReadOnly: kotlin.Boolean { get; }
+       public open override val pathSeparator: kotlin.String { get; }
+       public open override fun copy(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.Path
+
+       public open override fun createDirectory(path: kotlinx.files.Path): kotlinx.files.Path
+
+       public open override fun createFile(path: kotlinx.files.Path): kotlinx.files.Path
+
+       public open override fun delete(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override operator fun equals(other: kotlin.Any?): kotlin.Boolean
+
+       public open override fun exists(path: kotlinx.files.Path): kotlin.Boolean
+
+       public open override fun hashCode(): kotlin.Int
+
+       public open override fun move(source: kotlinx.files.Path, target: kotlinx.files.Path): kotlinx.files.Path
+
+       public open override fun openDirectory(path: kotlinx.files.Path): kotlinx.files.Directory
+
+       public open override fun openInput(path: kotlinx.files.Path): kotlinx.files.FileInput
+
+       public open override fun openOutput(path: kotlinx.files.Path): kotlinx.files.FileOutput
+
+       public open override fun path(base: kotlin.String, vararg children: kotlin.String): kotlinx.files.Path
+
+       public open override fun <T : kotlinx.files.FileAttributes> readAttributes(path: kotlinx.files.Path, attributesClass: kotlin.reflect.KClass<T>): T
+
+       public open override fun toString(): kotlin.String
+
+       public constructor MemoryFileSystem()
+
+   }
+
+}
+
+package kotlinx.files.platform
+{
+}
+

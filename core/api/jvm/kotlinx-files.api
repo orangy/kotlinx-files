@@ -1,0 +1,238 @@
+public final class kotlinx/files/ConvenienceKt {
+	public static final fun Path (Ljava/lang/String;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public static final fun Path (Lkotlinx/files/Path;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public static final fun copyDirectoryRecursively (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;Lkotlinx/files/Path;)V
+	public static final fun copyTo (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun createAllDirectories (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun createAllDirectories (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun createDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun createFile (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun delete (Lkotlinx/files/Path;)V
+	public static final fun deleteDirectoryRecursively (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;)V
+	public static final fun deleteIfExists (Lkotlinx/files/Path;)Z
+	public static final fun exists (Lkotlinx/files/Path;)Z
+	public static final fun isDirectory (Lkotlinx/files/Path;)Z
+	public static final fun isFile (Lkotlinx/files/Path;)Z
+	public static final fun isSymbolicLink (Lkotlinx/files/Path;)Z
+	public static final fun moveTo (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun openDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Directory;
+	public static final fun openInput (Lkotlinx/files/Path;)Lkotlinx/files/FileInput;
+	public static final fun openOutput (Lkotlinx/files/Path;)Lkotlinx/files/FileOutput;
+	public static final fun path (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public static final fun plus (Lkotlinx/files/Path;Ljava/lang/String;)Lkotlinx/files/Path;
+	public static final fun plus (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public static final fun readBytes (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;)[B
+	public static final fun readBytes (Lkotlinx/files/Path;)[B
+	public static final fun readText (Lkotlinx/files/Path;Ljava/nio/charset/Charset;)Ljava/lang/String;
+	public static synthetic fun readText$default (Lkotlinx/files/Path;Ljava/nio/charset/Charset;ILjava/lang/Object;)Ljava/lang/String;
+	public static final fun resolve (Lkotlinx/files/Path;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public static final fun writeBytes (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;[B)V
+	public static final fun writeBytes (Lkotlinx/files/Path;[B)V
+}
+
+public abstract interface class kotlinx/files/Directory : java/io/Closeable {
+	public abstract fun getChildren ()Ljava/lang/Iterable;
+}
+
+public final class kotlinx/files/DirectoryKt {
+	public static final fun forEachFile (Lkotlinx/files/FileSystem;Lkotlinx/files/Path;Lkotlin/jvm/functions/Function1;)V
+	public static final fun forEachFile (Lkotlinx/files/Path;Lkotlin/jvm/functions/Function1;)V
+	public static final fun listFiles (Lkotlinx/files/Path;)Ljava/util/List;
+	public static final fun useDirectory (Lkotlinx/files/Path;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+}
+
+public class kotlinx/files/FileAttributes {
+	public fun <init> (ZZZJJJJ)V
+	public final fun getCreationTimeUs ()J
+	public final fun getLastAccessTimeUs ()J
+	public final fun getLastModifiedTimeUs ()J
+	public final fun getSize ()J
+	public final fun isDirectory ()Z
+	public final fun isFile ()Z
+	public final fun isSymbolicLink ()Z
+}
+
+public abstract interface class kotlinx/files/FileInput : kotlinx/io/core/Input {
+	public abstract fun getIdentity ()Ljava/lang/String;
+	public abstract fun getPosition ()J
+	public abstract fun getSize ()J
+	public abstract fun seek (J)V
+}
+
+public abstract interface class kotlinx/files/FileOutput : kotlinx/io/core/Output {
+	public abstract fun getIdentity ()Ljava/lang/String;
+	public abstract fun getPosition ()J
+	public abstract fun getSize ()J
+	public abstract fun seek (J)V
+}
+
+public abstract interface class kotlinx/files/FileSystem {
+	public abstract fun copy (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public abstract fun createDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public abstract fun createFile (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public abstract fun delete (Lkotlinx/files/Path;)Z
+	public abstract fun exists (Lkotlinx/files/Path;)Z
+	public abstract fun getPathSeparator ()Ljava/lang/String;
+	public abstract fun isReadOnly ()Z
+	public abstract fun move (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public abstract fun openDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Directory;
+	public abstract fun openInput (Lkotlinx/files/Path;)Lkotlinx/files/FileInput;
+	public abstract fun openOutput (Lkotlinx/files/Path;)Lkotlinx/files/FileOutput;
+	public abstract fun path (Ljava/lang/String;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public abstract fun readAttributes (Lkotlinx/files/Path;Lkotlin/reflect/KClass;)Lkotlinx/files/FileAttributes;
+}
+
+public final class kotlinx/files/FileSystems {
+	public static final field INSTANCE Lkotlinx/files/FileSystems;
+	public final fun getDefault ()Lkotlinx/files/FileSystem;
+}
+
+public final class kotlinx/files/JvmConvenienceKt {
+	public static final fun createPlatformFileSystem ()Lkotlinx/files/FileSystem;
+}
+
+public final class kotlinx/files/JvmDirectory : kotlinx/files/Directory {
+	public fun <init> (Lkotlinx/files/JvmFileSystem;Lkotlinx/files/JvmPath;)V
+	public fun close ()V
+	public fun getChildren ()Ljava/lang/Iterable;
+}
+
+public final class kotlinx/files/JvmFileInput : kotlinx/io/core/AbstractInput, kotlinx/files/FileInput {
+	public fun <init> (Ljava/lang/String;Ljava/nio/channels/SeekableByteChannel;Lkotlinx/io/pool/ObjectPool;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/nio/channels/SeekableByteChannel;Lkotlinx/io/pool/ObjectPool;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getIdentity ()Ljava/lang/String;
+	public fun getPosition ()J
+	public fun getSize ()J
+	public fun seek (J)V
+}
+
+public final class kotlinx/files/JvmFileOutput : kotlinx/io/core/AbstractOutput, kotlinx/files/FileOutput {
+	public fun <init> (Ljava/lang/String;Ljava/nio/channels/SeekableByteChannel;Lkotlinx/io/pool/ObjectPool;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/nio/channels/SeekableByteChannel;Lkotlinx/io/pool/ObjectPool;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getIdentity ()Ljava/lang/String;
+	public fun getPosition ()J
+	public fun getSize ()J
+	public fun seek (J)V
+}
+
+public final class kotlinx/files/JvmFileSystem : kotlinx/files/FileSystem {
+	public static final field Companion Lkotlinx/files/JvmFileSystem$Companion;
+	public fun <init> (Ljava/nio/file/FileSystem;)V
+	public fun copy (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun createDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun createFile (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun delete (Lkotlinx/files/Path;)Z
+	public fun exists (Lkotlinx/files/Path;)Z
+	public fun getPathSeparator ()Ljava/lang/String;
+	public fun isReadOnly ()Z
+	public fun move (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public synthetic fun openDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Directory;
+	public fun openDirectory (Lkotlinx/files/Path;)Lkotlinx/files/JvmDirectory;
+	public fun openInput (Lkotlinx/files/Path;)Lkotlinx/files/FileInput;
+	public fun openOutput (Lkotlinx/files/Path;)Lkotlinx/files/FileOutput;
+	public fun path (Ljava/lang/String;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public fun readAttributes (Lkotlinx/files/Path;Lkotlin/reflect/KClass;)Lkotlinx/files/FileAttributes;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/files/JvmFileSystem$Companion {
+	public final fun fromPlatform (Ljava/nio/file/FileSystem;)Lkotlinx/files/JvmFileSystem;
+	public final fun fromPlatform (Ljava/nio/file/Path;)Lkotlinx/files/JvmPath;
+	public final fun getDefault ()Lkotlinx/files/JvmFileSystem;
+}
+
+public final class kotlinx/files/JvmPath : kotlinx/files/Path {
+	public fun <init> (Lkotlinx/files/JvmFileSystem;Ljava/nio/file/Path;)V
+	public fun component (I)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getComponentCount ()I
+	public synthetic fun getFileSystem ()Lkotlinx/files/FileSystem;
+	public fun getFileSystem ()Lkotlinx/files/JvmFileSystem;
+	public fun getName ()Ljava/lang/String;
+	public fun getParent ()Lkotlinx/files/Path;
+	public fun hashCode ()I
+	public fun isAbsolute ()Z
+	public final fun toJavaPath ()Ljava/nio/file/Path;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/files/JvmPathKt {
+	public static final fun toKotlinPath (Ljava/nio/file/Path;)Lkotlinx/files/JvmPath;
+}
+
+public abstract interface class kotlinx/files/Path {
+	public abstract fun component (I)Ljava/lang/String;
+	public abstract fun getComponentCount ()I
+	public abstract fun getFileSystem ()Lkotlinx/files/FileSystem;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getParent ()Lkotlinx/files/Path;
+	public abstract fun isAbsolute ()Z
+}
+
+public final class kotlinx/files/PathKt {
+	public static final fun getExtension (Lkotlinx/files/Path;)Ljava/lang/String;
+}
+
+public final class kotlinx/files/PosixAttributesKt {
+	public static final fun toHumanReadableString (Ljava/util/Set;)Ljava/lang/String;
+	public static final fun toOctString (Ljava/util/Set;)Ljava/lang/String;
+}
+
+public final class kotlinx/files/PosixFileAttributes : kotlinx/files/FileAttributes {
+	public fun <init> (ZZZJJJJLjava/util/Set;)V
+	public final fun getPermissions ()Ljava/util/Set;
+}
+
+public final class kotlinx/files/PosixFilePermissions : java/lang/Enum {
+	public static final field Companion Lkotlinx/files/PosixFilePermissions$Companion;
+	public static final field GROUP_EXECUTE Lkotlinx/files/PosixFilePermissions;
+	public static final field GROUP_READ Lkotlinx/files/PosixFilePermissions;
+	public static final field GROUP_WRITE Lkotlinx/files/PosixFilePermissions;
+	public static final field OTHERS_EXECUTE Lkotlinx/files/PosixFilePermissions;
+	public static final field OTHERS_READ Lkotlinx/files/PosixFilePermissions;
+	public static final field OTHERS_WRITE Lkotlinx/files/PosixFilePermissions;
+	public static final field OWNER_EXECUTE Lkotlinx/files/PosixFilePermissions;
+	public static final field OWNER_READ Lkotlinx/files/PosixFilePermissions;
+	public static final field OWNER_WRITE Lkotlinx/files/PosixFilePermissions;
+	public static final field SETGID Lkotlinx/files/PosixFilePermissions;
+	public static final field SETUID Lkotlinx/files/PosixFilePermissions;
+	public static final field STICKY_BIT Lkotlinx/files/PosixFilePermissions;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/files/PosixFilePermissions;
+	public static fun values ()[Lkotlinx/files/PosixFilePermissions;
+}
+
+public final class kotlinx/files/PosixFilePermissions$Companion {
+}
+
+public final class kotlinx/files/UnixPath : kotlinx/files/Path {
+	public fun <init> (Lkotlinx/files/FileSystem;Ljava/lang/String;)V
+	public fun component (I)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getComponentCount ()I
+	public fun getFileSystem ()Lkotlinx/files/FileSystem;
+	public fun getName ()Ljava/lang/String;
+	public synthetic fun getParent ()Lkotlinx/files/Path;
+	public fun getParent ()Lkotlinx/files/UnixPath;
+	public fun hashCode ()I
+	public fun isAbsolute ()Z
+	public final fun resolve (Lkotlinx/files/Path;)Lkotlinx/files/UnixPath;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class kotlinx/files/memory/MemoryFileSystem : kotlinx/files/FileSystem {
+	public fun <init> ()V
+	public fun copy (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun createDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun createFile (Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun delete (Lkotlinx/files/Path;)Z
+	public fun exists (Lkotlinx/files/Path;)Z
+	public fun getPathSeparator ()Ljava/lang/String;
+	public fun isReadOnly ()Z
+	public fun move (Lkotlinx/files/Path;Lkotlinx/files/Path;)Lkotlinx/files/Path;
+	public fun openDirectory (Lkotlinx/files/Path;)Lkotlinx/files/Directory;
+	public fun openInput (Lkotlinx/files/Path;)Lkotlinx/files/FileInput;
+	public fun openOutput (Lkotlinx/files/Path;)Lkotlinx/files/FileOutput;
+	public fun path (Ljava/lang/String;[Ljava/lang/String;)Lkotlinx/files/Path;
+	public fun readAttributes (Lkotlinx/files/Path;Lkotlin/reflect/KClass;)Lkotlinx/files/FileAttributes;
+}
+
