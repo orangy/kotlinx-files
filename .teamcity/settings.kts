@@ -100,7 +100,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
     }
 
     // What files to publish as build artifacts
-    artifactRules = "+:maven=>maven\n+:api=>api"
+    artifactRules = "+:build/maven=>maven\n+:build/api=>api"
 }
 
 fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
