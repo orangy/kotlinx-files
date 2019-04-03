@@ -52,7 +52,7 @@ project {
         }
         buildAll.dependsOn(build) {
             artifacts {
-                artifactRules = "+:maven=>maven"
+                artifactRules = "+:maven=>maven\n+:api=>api"
             }
         }
     }
